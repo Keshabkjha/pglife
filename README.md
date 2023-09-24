@@ -1,4 +1,4 @@
-![SignUp Model](https://github.com/Keshabkjha/pglife/assets/123746528/0dc3afd5-78da-4dd5-8aca-6401609f8f34)# PGLife | PG Bookings 🛏️
+# PGLife | PG Bookings 🛏️
 
 <samp> Final Project.  
 Web Development Trainings.  
