@@ -10,6 +10,7 @@
 
                 <div class="modal-body">
                     <form id="login-form" class="form" role="form" method="post" action="api/login_submit.php">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>" />
                         <div class="input-group form-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">

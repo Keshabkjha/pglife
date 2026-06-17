@@ -98,10 +98,7 @@ INSERT INTO `interested_users_properties` (`id`, `user_id`, `property_id`) VALUE
 (5, 2, 5),
 (6, 3, 1),
 (7, 3, 2),
-(8, 3, 5),
-(9, 4, 2),
-(121, 10, 1),
-(126, 12, 3);
+(8, 3, 5);
 
 -- --------------------------------------------------------
 
@@ -221,16 +218,16 @@ CREATE TABLE `testimonials` (
 --
 
 INSERT INTO `testimonials` (`id`, `property_id`, `user_name`, `content`) VALUES
-(1, 1, 'Ashutosh Gowariker', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(2, 1, 'Karan Johar', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(3, 2, 'Zoya Akhtar', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(4, 2, 'Farhan Akhtar', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(5, 2, 'Anurag Kashyap', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(6, 3, 'Mira Nair', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(7, 3, 'Meghna Gulzar', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(8, 4, 'Farah Khan', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(9, 5, 'Rajkumar Hirani', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
-(10, 5, 'Sanjay Leela Bhansali', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.');
+(1, 1, 'Aarav Sharma', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(2, 1, 'Karan Mehta', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(3, 2, 'Zoya Khan', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(4, 2, 'Farhan K.', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(5, 2, 'Anurag S.', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(6, 3, 'Mira Kapoor', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(7, 3, 'Meghna G.', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(8, 4, 'Farah S.', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(9, 5, 'Rajkumar P.', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.'),
+(10, 5, 'Sanjay B.', 'You just have to arrive at the place, it\'s fully furnished and stocked with all basic amenities and services and even your friends are welcome.');
 
 -- --------------------------------------------------------
 
@@ -245,20 +242,17 @@ CREATE TABLE `users` (
   `full_name` varchar(150) NOT NULL,
   `phone` varchar(15) NOT NULL,
   `gender` enum('male','female') NOT NULL,
-  `college_name` varchar(255) NOT NULL
+  `institution_or_organization` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `password`, `full_name`, `phone`, `gender`, `college_name`) VALUES
-(1, 'anuj.kalbalia@gmail.com', 'b1b3773a05c0ed0176787a4f1574ff0075f7521e', 'Anuj Kalbalia', '9535100112', 'male', 'NITD'),
-(2, 'shadab@gmail.com', 'b1b3773a05c0ed0176787a4f1574ff0075f7521e', 'Shadab Alam', '9876543210', 'male', 'NITJ'),
-(3, 'aditya@gmail.com', 'b1b3773a05c0ed0176787a4f1574ff0075f7521e', 'Aditya Sood', '9876543210', 'male', 'Chandigarh University'),
-(4, 'radhika@gmail.com', 'b1b3773a05c0ed0176787a4f1574ff0075f7521e', 'Radhika Bhatia', '9876543210', 'female', 'Delhi University'),
-(10, 'jamestheo@gmail.com', 'ba2fe7a211d3fbae3903afd0c51f9b9474f5369f', 'James Theo', '8488888880', 'male', 'M H University'),
-(12, 'janedoe@email.com', 'e1770cefc174d55219edcab48f3c91905eb5bd9b', 'Jane Doe', '2334949555', 'female', 'ASU');
+INSERT INTO `users` (`id`, `email`, `password`, `full_name`, `phone`, `gender`, `institution_or_organization`) VALUES
+(1, 'keshab@example.com', '$2y$10$XuUwDZjh34G/xZGvWJ0bCOVniAu1OH4huL/KpggKvIZyq90k9GJRK', 'keshabkjha', '9876543210', 'male', 'Organization A'),
+(2, 'ritesh@example.com', '$2y$10$XuUwDZjh34G/xZGvWJ0bCOVniAu1OH4huL/KpggKvIZyq90k9GJRK', 'Ritesh thakur', '9876543211', 'male', 'Organization B'),
+(3, 'puneet@example.com', '$2y$10$XuUwDZjh34G/xZGvWJ0bCOVniAu1OH4huL/KpggKvIZyq90k9GJRK', 'Puneet pandey', '9876543212', 'male', 'Organization C');
 
 --
 -- Indexes for dumped tables
@@ -387,6 +381,45 @@ ALTER TABLE `properties_amenities`
 --
 ALTER TABLE `testimonials`
   ADD CONSTRAINT `testimonials_ibfk_1` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`);
+
+--
+-- Table structure for table `bookings`
+--
+CREATE TABLE `bookings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `property_id` int(11) NOT NULL,
+  `booking_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `property_id` (`property_id`),
+  CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `reviews`
+--
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `property_id` int(11) NOT NULL,
+  `user_name` varchar(150) NOT NULL,
+  `rating` int(11) NOT NULL,
+  `content` longtext NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `property_id` (`property_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `reviews`
+--
+INSERT INTO `reviews` (`id`, `property_id`, `user_name`, `rating`, `content`) VALUES
+(1, 1, 'John Doe', 5, 'Absolutely amazing PG! The wifi is super fast and clean rooms.'),
+(2, 1, 'Alice Smith', 4, 'Very friendly owner and great food quality. Recommended!'),
+(3, 2, 'Bob Johnson', 3, 'Average place. Cleanliness could be better but rent is low.');
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

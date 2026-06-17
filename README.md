@@ -1,51 +1,73 @@
-# PGLife | PG Bookings 🛏️
+# PGLife | Professional PG Booking System 🛏️
 
-<samp> Final Project.  
-Web Development Trainings.  
-Internshala Trainings. </samp>
+A state-of-the-art, secure, containerized, and deployment-ready PG booking application built with PHP, MySQL, Apache, and Bootstrap. Designed to cater to students and working professionals.
 
-### Web Server |  Apache HTTP Server
+---
 
-### Database
-    -- Download SQL file from database directory in repository.
-    -- Create database in phpmyadmin named pglife.
-    -- Import SQL file to database.
+## Key Features & Enhancements
 
-### Continued Developments
-<samp> 
-&nbsp;&nbsp;&nbsp;-- Implement the filter modal in <b>property_list.php</b> page. 
-</samp>
+### 🔒 Enterprise-Grade Security
+* **SQL Injection Prevention**: Prepared statements utilized across all database operations.
+* **XSS Mitigation**: Contextual escaping of all dynamic parameters using `htmlspecialchars()`.
+* **CSRF Protection**: Secure cryptographically strong anti-CSRF tokens validating all forms (login, signup, profile updates) and AJAX operations (book/cancel actions).
+* **Session Safety**: Regeneration of session IDs (`session_regenerate_id(true)`) upon successful authentication to block Session Fixation attacks.
+* **BCrypt Hashing**: Modern, secure password storage replacing outdated hash algorithms.
 
-### Author | @[keshabkjha](https://github.com/Keshabkjha)
+### 🐳 Modern Infrastructure & Local Mail Trap
+* **Dockerized Environment**: Full containerization using Docker Compose (Apache, PHP 8.2, MySQL 8.0).
+* **Mailhog SMTP Trap**: Integrates a local mock SMTP server (Mailhog) to catch registration OTPs and transactional welcome emails at `http://localhost:8025` without external API dependencies.
+* **Socket SMTP Mailer**: Implemented custom SMTP socket connection protocols for rapid, secure email dispatch.
 
-### PGLife Website Design
-#### Home Page
-![Homepage](https://github.com/Keshabkjha/pglife/assets/123746528/dd8beeab-4062-41ab-94f6-3245b7ed7701)
+### 🌟 Premium User Experience (UX/UI)
+* **Real-time Finder Filters**: Instant client-side text keyword searches, double-handle rent range sliders, and multi-amenity checkboxes.
+* **Instant Client-side Ordering**: Instantly toggle ordering (highest/lowest rent first) dynamically without full-page reloads.
+* **Interactive Maps**: Integrates Leaflet.js interactive maps on details pages.
+* **Ratings & Reviews System**: Real-time review submissions with dynamic client-side list rendering.
+* **Booking Cancellation**: Easy cancellations with smooth CSS transform & fade scale animations.
+* **Glassmorphism Backdrop Blurs**: Applied backdrop blur filters to modal dialog overlays for a modern feel.
+* **Real-time Navigation Badges**: Interactive counts for interested and booked properties displayed in the header.
 
+---
 
-#### SignUp Modal  
-![SignUp Model](https://github.com/Keshabkjha/pglife/assets/123746528/95d77d5f-f319-4706-a41a-f4c223473f41)
+## Tech Stack
+* **Web Server**: Apache HTTP Server (Dockerized)
+* **Backend**: PHP 8.2 with `mysqli` extension
+* **Database**: MySQL 8.0 (Dockerized)
+* **Mail Server**: Mailhog (Dockerized mock SMTP trap)
+* **Frontend**: HTML5, Vanilla CSS3, Javascript (ES6), Bootstrap 4, FontAwesome 5, Leaflet.js
 
+---
 
-#### Login Modal   
-![Login Model](https://github.com/Keshabkjha/pglife/assets/123746528/f6331e64-7724-48fa-928c-bd080055e28e)
+## Getting Started
 
+### Prerequisites
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-#### Dashboard   
-![Dashboard](https://github.com/Keshabkjha/pglife/assets/123746528/6f91af42-9af9-4c68-89d1-9e690fdee4f3)
+### Spin up the Containers
+Run the following command in the root directory to spin up the server, database, and SMTP services:
+```bash
+docker compose up -d
+```
 
+### Access Ports
+* **Web Application**: [http://localhost:8080/home.php](http://localhost:8080/home.php)
+* **Mailhog Web Interface**: [http://localhost:8025](http://localhost:8025)
+* **MySQL Database**: Mapped to host port `3307`
 
+---
 
-#### Property List Page  
-![Property List](https://github.com/Keshabkjha/pglife/assets/123746528/5763648c-5177-4e25-9a26-3799df1300a7)
+## Seed Accounts for Testing
 
+All test accounts share the password: `password`
 
+1. **Keshabkjha**
+   * **Email**: `keshab@example.com`
+2. **Ritesh Thakur**
+   * **Email**: `ritesh@example.com`
+3. **Puneet Pandey**
+   * **Email**: `puneet@example.com`
 
-#### Property Detail Page
-![Property Details1](https://github.com/Keshabkjha/pglife/assets/123746528/6f269a2d-405a-4abe-97ec-ee5643c33cd6)
-![Property Details2](https://github.com/Keshabkjha/pglife/assets/123746528/58272a55-af03-4ae5-95ed-91e726b44791)
-![Property Details3](https://github.com/Keshabkjha/pglife/assets/123746528/6aab0454-2448-40aa-af8b-36101f25d886)
+---
 
-
-
-
+## Author
+* **@[keshabkjha](https://github.com/Keshabkjha)**

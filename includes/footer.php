@@ -14,7 +14,7 @@
                 <a href="property_list.php?city=Hyderabad">PG in Hyderabad</a>
             </div>
         </div>
-        <div class="footer-copyright">© 2020 Copyright PGLife </div>
+        <div class="footer-copyright">© <?= date('Y') ?> Copyright Keshabkjha</div>
     </div>
 </div>
 

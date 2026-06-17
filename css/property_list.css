@@ -25,15 +25,17 @@
 /*   Property Card   */
 .property-card {
     background-color: #ffffff;
-    border-radius: 2px;
+    border-radius: 8px;
     padding: 15px 0px;
     margin: 0px auto 20px;
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1), 0 2px 10px 0 rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .property-card:focus,
 .property-card:hover {
-    box-shadow: 0 5px 11px 0 rgba(0, 0, 0, 0.18), 0 4px 15px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.15), 0 6px 6px 0 rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
 }
 
 .image-container {

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: pglife_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: pglife
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./database/pglife.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+
+  web:
+    build: .
+    container_name: pglife_web
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: pglife
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    depends_on:
+      - db
+      - mailhog
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: pglife_mailhog
+    restart: always
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+volumes:
+  mysql_data:

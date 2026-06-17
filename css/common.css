@@ -186,3 +186,10 @@ input[type="radio"] {
     text-align: center;
     padding-top: 24px;
 }
+
+/* Modal Glassmorphism Blur */
+.modal-backdrop.show {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    background-color: rgba(0, 0, 0, 0.4) !important;
+}

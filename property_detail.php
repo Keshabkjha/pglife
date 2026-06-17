@@ -2,15 +2,27 @@
     session_start();
     require("includes/database_connect.php");
 
-    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
-    $property_id = $_GET['property_id'];
+    $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : NULL;
+    $property_id = isset($_GET['property_id']) ? (int)$_GET['property_id'] : 0;
+
+    if ($property_id <= 0) {
+        echo "Invalid property ID.";
+        return;
+    }
 
     $sql_1 = "SELECT *, p.id AS property_id, p.name AS property_name, c.name AS city_name 
                 FROM properties p
                 INNER JOIN cities c
                 ON p.city_id = c.id
-                WHERE p.id = $property_id";
-    $result_1 = mysqli_query($conn, $sql_1);
+                WHERE p.id = ?";
+    $stmt_1 = mysqli_prepare($conn, $sql_1);
+    if (!$stmt_1) {
+        echo "Something went wrong!";
+        return;
+    }
+    mysqli_stmt_bind_param($stmt_1, "i", $property_id);
+    mysqli_stmt_execute($stmt_1);
+    $result_1 = mysqli_stmt_get_result($stmt_1);
     if(!$result_1){
         echo "Something went wrong!";
         return;
@@ -18,12 +30,19 @@
 
     $property = mysqli_fetch_assoc($result_1);
     if(!$property){
-        echo "Something went wrong!";
+        echo "Property not found.";
         return;
     }
 
-    $sql_2 = "SELECT * FROM testimonials WHERE property_id = $property_id";
-    $result_2 = mysqli_query($conn, $sql_2);
+    $sql_2 = "SELECT * FROM testimonials WHERE property_id = ?";
+    $stmt_2 = mysqli_prepare($conn, $sql_2);
+    if (!$stmt_2) {
+        echo "Something went wrong!";
+        return;
+    }
+    mysqli_stmt_bind_param($stmt_2, "i", $property_id);
+    mysqli_stmt_execute($stmt_2);
+    $result_2 = mysqli_stmt_get_result($stmt_2);
     if(!$result_2){
         echo "Something went wrong!";
         return;
@@ -34,8 +53,15 @@
     $sql_3 = "SELECT a.*
                 FROM amenities a
                 INNER JOIN properties_amenities pa ON a.id = pa.amenity_id
-                WHERE pa.property_id = $property_id";
-    $result_3 = mysqli_query($conn, $sql_3);
+                WHERE pa.property_id = ?";
+    $stmt_3 = mysqli_prepare($conn, $sql_3);
+    if (!$stmt_3) {
+        echo "Something went wrong!";
+        return;
+    }
+    mysqli_stmt_bind_param($stmt_3, "i", $property_id);
+    mysqli_stmt_execute($stmt_3);
+    $result_3 = mysqli_stmt_get_result($stmt_3);
     if(!$result_3){
         echo "Something went wrong!";
         return;
@@ -43,8 +69,15 @@
 
     $amenities = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
 
-    $sql_4 = "SELECT * FROM interested_users_properties WHERE property_id = $property_id";
-    $result_4 = mysqli_query($conn, $sql_4);
+    $sql_4 = "SELECT * FROM interested_users_properties WHERE property_id = ?";
+    $stmt_4 = mysqli_prepare($conn, $sql_4);
+    if (!$stmt_4) {
+        echo "Something went wrong!";
+        return;
+    }
+    mysqli_stmt_bind_param($stmt_4, "i", $property_id);
+    mysqli_stmt_execute($stmt_4);
+    $result_4 = mysqli_stmt_get_result($stmt_4);
     if(!$result_4){
         echo "Something went wrong!";
         return;
@@ -52,6 +85,33 @@
 
     $interested_users = mysqli_fetch_all($result_4, MYSQLI_ASSOC);
     $interested_users_count = mysqli_num_rows($result_4);
+
+    $is_booked = false;
+    if ($user_id) {
+        $sql_booked = "SELECT * FROM bookings WHERE user_id = ? AND property_id = ?";
+        $stmt_booked = mysqli_prepare($conn, $sql_booked);
+        if ($stmt_booked) {
+            mysqli_stmt_bind_param($stmt_booked, "ii", $user_id, $property_id);
+            mysqli_stmt_execute($stmt_booked);
+            $result_booked = mysqli_stmt_get_result($stmt_booked);
+            if ($result_booked && mysqli_num_rows($result_booked) > 0) {
+                $is_booked = true;
+            }
+        }
+    }
+
+    // Fetch user reviews
+    $sql_reviews = "SELECT * FROM reviews WHERE property_id = ? ORDER BY created_at DESC";
+    $stmt_reviews = mysqli_prepare($conn, $sql_reviews);
+    $reviews = [];
+    if ($stmt_reviews) {
+        mysqli_stmt_bind_param($stmt_reviews, "i", $property_id);
+        mysqli_stmt_execute($stmt_reviews);
+        $result_reviews = mysqli_stmt_get_result($stmt_reviews);
+        if ($result_reviews) {
+            $reviews = mysqli_fetch_all($result_reviews, MYSQLI_ASSOC);
+        }
+    }
 ?>
 
 <!DOCTYPE html>
@@ -61,11 +121,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ganpati Paying Guest | PG Life</title>
+    <title><?= htmlspecialchars($property['property_name']); ?> | PG Life</title>
 
     <?php 
         include "includes/head_links.php";
     ?>
+
+    <!-- Leaflet.js CSS for Interactive Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <link href="css/property_detail.css" rel="stylesheet" />
 </head>
@@ -81,10 +144,10 @@
                 <a href="home.php">Home</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="property_list.php?city=<?= $property['city_name']; ?>"><?= $property['city_name']; ?></a>
+                <a href="property_list.php?city=<?= urlencode($property['city_name']); ?>"><?= htmlspecialchars($property['city_name']); ?></a>
             </li>
             <li class="breadcrumb-item active" aria-current="page">
-                <?= $property['property_name']; ?>
+                <?= htmlspecialchars($property['property_name']); ?>
             </li>
         </ol>
     </nav>
@@ -105,7 +168,7 @@
             foreach($property_images as $index => $property_image) {
             ?>
             <div class="carousel-item <?= $index == 0? "active":"" ?>">
-                <img class="d-block w-100" src="<?= $property_image ?>" alt="slide">
+                <img class="d-block w-100" src="<?= $property_image ?>" alt="Slide <?= $index + 1 ?>">
             </div>
             <?php
                 }
@@ -131,7 +194,7 @@
                 <?php
                     $rating = $total_rating;
                     for($i = 0; $i < 5; $i++) {
-                        if($rating <= $i + 0.8) {
+                        if($rating >= $i + 0.8) {
                 ?>
                     <i class="fas fa-star"></i>
                     <?php 
@@ -171,21 +234,21 @@
             </div>
         </div>
         <div class="detail-container">
-            <div class="property-name"><?= $property['property_name']?></div>
-            <div class="property-address"><?= $property['address']?></div>
+            <div class="property-name"><?= htmlspecialchars($property['property_name'])?></div>
+            <div class="property-address"><?= htmlspecialchars($property['address'])?></div>
             <div class="property-gender">
                 <?php
                     if($property['gender'] == "male") {
                 ?>
-                    <img src="img/male.png" />
+                    <img src="img/male.png" alt="Male Only" />
                 <?php
                     } elseif ($property['gender'] == "female") {
                 ?>
-                    <img src="img/female.png" />
+                    <img src="img/female.png" alt="Female Only" />
                 <?php
                     } else {
                 ?>
-                    <img src="img/unisex.png" />
+                    <img src="img/unisex.png" alt="Unisex" />
                 <?php
                     }
                 ?>
@@ -197,7 +260,11 @@
                 <div class="rent-unit">per month</div>
             </div>
             <div class="button-container col-6">
-                <a href="#" class="btn btn-primary">Book Now</a>
+                <?php if ($is_booked) { ?>
+                    <button class="btn btn-success btn-block" disabled>Booked</button>
+                <?php } else { ?>
+                    <a href="#" id="book-now-btn" class="btn btn-primary btn-block">Book Now</a>
+                <?php } ?>
             </div>
         </div>
     </div>
@@ -213,8 +280,8 @@
                             if($amenity['type'] == "Building") {
                     ?>
                         <div class="amenity-container">
-                            <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
-                            <span><?= $amenity['name'] ?></span>
+                            <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
+                            <span><?= htmlspecialchars($amenity['name']) ?></span>
                         </div>
                     <?php 
                             }
@@ -229,8 +296,8 @@
                             if( $amenity['type'] == "Common Area") {
                     ?>
                     <div class="amenity-container">
-                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
-                        <span><?= $amenity['name'] ?></span>
+                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
+                        <span><?= htmlspecialchars($amenity['name']) ?></span>
                     </div>
                     <?php
                             }
@@ -245,8 +312,8 @@
                             if ($amenity['type'] == "Bedroom") {
                     ?>
                     <div class="amenity-container">
-                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
-                        <span><?= $amenity['name'] ?></span>
+                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
+                        <span><?= htmlspecialchars($amenity['name']) ?></span>
                     </div>
                     <?php
                             }
@@ -261,14 +328,13 @@
                             if ($amenity['type'] == "Washroom") {
                     ?>
                     <div class="amenity-container">
-                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg">
-                        <span><?= $amenity['name'] ?></span>
+                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
+                        <span><?= htmlspecialchars($amenity['name']) ?></span>
                     </div>
-                </div>
-                <?php
+                    <?php
+                            }
                         }
-                    }
-                ?>
+                    ?>
                 </div>
             </div>
         </div>
@@ -276,7 +342,11 @@
 
     <div class="property-about page-container">
         <h1>About the Property</h1>
-        <p><?= $property['description'] ?></p>
+        <p><?= htmlspecialchars($property['description']) ?></p>
+
+        <!-- Map Location -->
+        <h4 class="mt-5 font-weight-bold">Property Location</h4>
+        <div id="map" class="mt-3" style="height: 300px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border: 1px solid #ddd;"></div>
     </div>
 
     <div class="property-rating">
@@ -399,20 +469,74 @@
         </div>
     </div>
 
-    <div class="property-testimonials page-container">
+    <!-- Reviews and Ratings Section -->
+    <div class="property-reviews page-container border-top pt-5">
+        <h1>User Reviews</h1>
+        <div id="reviews-list">
+            <?php if (count($reviews) == 0) { ?>
+                <p class="text-muted" id="no-reviews-msg">No reviews yet. Be the first to write one!</p>
+            <?php } else { 
+                foreach ($reviews as $review) {
+            ?>
+                <div class="review-block mb-4 p-3 bg-light rounded shadow-sm border">
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong class="text-dark"><?= htmlspecialchars($review['user_name']) ?></strong>
+                        <div style="color: #EA322E; font-size: 11px;">
+                            <?php for ($r = 0; $r < 5; $r++) { ?>
+                                <i class="<?= $r < $review['rating'] ? 'fas' : 'far' ?> fa-star"></i>
+                            <?php } ?>
+                        </div>
+                    </div>
+                    <p class="mb-2 text-muted" style="font-size: 14px;"><?= htmlspecialchars($review['content']) ?></p>
+                    <small class="text-muted" style="font-size: 11px;"><i class="far fa-clock mr-1"></i><?= date('d M Y, h:i A', strtotime($review['created_at'])) ?></small>
+                </div>
+            <?php 
+                }
+            } ?>
+        </div>
+
+        <?php if ($user_id) { ?>
+            <div class="add-review-container mt-5 p-4 border rounded bg-white shadow-sm">
+                <h4 class="mb-3 font-weight-bold">Submit a Review</h4>
+                <form id="add-review-form">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>" />
+                    <input type="hidden" name="property_id" value="<?= $property_id ?>" />
+                    <div class="form-group">
+                        <label for="review-rating" class="font-weight-bold">Rating:</label>
+                        <select class="form-control" name="rating" id="review-rating" required>
+                            <option value="5">5 Stars - Excellent</option>
+                            <option value="4">4 Stars - Very Good</option>
+                            <option value="3">3 Stars - Average</option>
+                            <option value="2">2 Stars - Poor</option>
+                            <option value="1">1 Star - Terrible</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="review-content" class="font-weight-bold">Your Review:</label>
+                        <textarea class="form-control" name="content" id="review-content" rows="4" placeholder="Tell others about your experience..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4">Submit Review</button>
+                </form>
+            </div>
+        <?php } else { ?>
+            <p class="text-muted mt-4">Please <a href="#" data-toggle="modal" data-target="#login-modal">Login</a> to write a review.</p>
+        <?php } ?>
+    </div>
+
+    <div class="property-testimonials page-container border-top pt-5">
         <h1>What people say</h1>
         <?php 
             foreach ($testimonials as $testimonial) {
         ?>
         <div class="testimonial-block">
             <div class="testimonial-image-container">
-                <img class="testimonial-img" src="img/man.png">
+                <img class="testimonial-img" src="img/man.png" alt="Testimonial user">
             </div>
             <div class="testimonial-text">
                 <i class="fa fa-quote-left" aria-hidden="true"></i>
-                <p><?= $testimonial['content']; ?></p>
+                <p><?= htmlspecialchars($testimonial['content']); ?></p>
             </div>
-            <div class="testimonial-name">- <?= $testimonial['user_name']; ?></div>
+            <div class="testimonial-name">- <?= htmlspecialchars($testimonial['user_name']); ?></div>
         </div>
         <?php
             }
@@ -424,6 +548,9 @@
         include "includes/login_modal.php";
         include "includes/footer.php";
     ?>
+
+    <!-- Leaflet.js Interactive Maps JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script type="text/javascript" src="js/property_detail.js"></script>
 </body>
