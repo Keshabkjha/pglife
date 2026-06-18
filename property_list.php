@@ -141,26 +141,58 @@
                         <button class="btn btn-sm btn-outline-dark dropdown-toggle w-100" type="button" id="amenitiesDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="border-radius: 4px; padding: 6px 12px;">
                             <i class="fas fa-filter mr-1"></i>Amenities
                         </button>
-                        <div class="dropdown-menu dropdown-menu-right p-3" aria-labelledby="amenitiesDropdown" style="width: 250px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+                        <div class="dropdown-menu dropdown-menu-right p-3" aria-labelledby="amenitiesDropdown" style="width: 260px; border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
                             <div class="custom-control custom-checkbox mb-2">
                                 <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-wifi" data-amenity="Wifi">
-                                <label class="custom-control-label" for="chk-wifi">Wifi</label>
+                                <label class="custom-control-label" for="chk-wifi"><i class="fas fa-wifi mr-1 text-muted"></i> Wifi</label>
                             </div>
                             <div class="custom-control custom-checkbox mb-2">
                                 <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-ac" data-amenity="Air Conditioner">
-                                <label class="custom-control-label" for="chk-ac">Air Conditioner</label>
+                                <label class="custom-control-label" for="chk-ac"><i class="fas fa-snowflake mr-1 text-muted"></i> Air Conditioner</label>
                             </div>
                             <div class="custom-control custom-checkbox mb-2">
                                 <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-power" data-amenity="Power Backup">
-                                <label class="custom-control-label" for="chk-power">Power Backup</label>
+                                <label class="custom-control-label" for="chk-power"><i class="fas fa-bolt mr-1 text-muted"></i> Power Backup</label>
                             </div>
                             <div class="custom-control custom-checkbox mb-2">
                                 <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-parking" data-amenity="Parking">
-                                <label class="custom-control-label" for="chk-parking">Parking</label>
+                                <label class="custom-control-label" for="chk-parking"><i class="fas fa-parking mr-1 text-muted"></i> Parking</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-washing" data-amenity="Washing Machine">
+                                <label class="custom-control-label" for="chk-washing"><i class="fas fa-tshirt mr-1 text-muted"></i> Washing Machine</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-tv" data-amenity="TV">
+                                <label class="custom-control-label" for="chk-tv"><i class="fas fa-tv mr-1 text-muted"></i> TV</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-geyser" data-amenity="Geyser">
+                                <label class="custom-control-label" for="chk-geyser"><i class="fas fa-hot-tub mr-1 text-muted"></i> Geyser</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-dining" data-amenity="Dining">
+                                <label class="custom-control-label" for="chk-dining"><i class="fas fa-utensils mr-1 text-muted"></i> Dining / Meals</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-water" data-amenity="Water Purifier">
+                                <label class="custom-control-label" for="chk-water"><i class="fas fa-faucet mr-1 text-muted"></i> Water Purifier</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-bed" data-amenity="Bed with Mattress">
+                                <label class="custom-control-label" for="chk-bed"><i class="fas fa-bed mr-1 text-muted"></i> Bed with Mattress</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-lift" data-amenity="Lift">
+                                <label class="custom-control-label" for="chk-lift"><i class="fas fa-arrow-up mr-1 text-muted"></i> Lift</label>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-cctv" data-amenity="CCTV">
+                                <label class="custom-control-label" for="chk-cctv"><i class="fas fa-video mr-1 text-muted"></i> CCTV</label>
                             </div>
                             <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-washing" data-amenity="Washing Machine">
-                                <label class="custom-control-label" for="chk-washing">Washing Machine</label>
+                                <input type="checkbox" class="custom-control-input amenity-filter-chk" id="chk-fireext" data-amenity="Fire Extinguisher">
+                                <label class="custom-control-label" for="chk-fireext"><i class="fas fa-fire-extinguisher mr-1 text-muted"></i> Fire Extinguisher</label>
                             </div>
                         </div>
                     </div>

@@ -44,25 +44,59 @@ window.addEventListener ("load", function () {
     var map_el = document.getElementById("map");
     if (map_el) {
         var lat = 28.643, lng = 77.215; // default Delhi
-        var propName = document.querySelector(".property-name") ? document.querySelector(".property-name").textContent : "PG Location";
-        var propAddr = document.querySelector(".property-address") ? document.querySelector(".property-address").textContent : "";
+        var propName = document.querySelector(".property-name") ? document.querySelector(".property-name").textContent.trim() : "PG Location";
+        var propAddr = document.querySelector(".property-address") ? document.querySelector(".property-address").textContent.trim() : "";
+
+        function initMap(mapLat, mapLng) {
+            var map = L.map('map').setView([mapLat, mapLng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            L.marker([mapLat, mapLng]).addTo(map)
+                .bindPopup('<strong>' + propName + '</strong><br>' + propAddr)
+                .openPopup();
+        }
 
         // vary mock coordinates slightly based on property_id
-        if (property_id == 1) { lat = 28.6430; lng = 77.2150; }
-        else if (property_id == 2) { lat = 28.6425; lng = 77.2120; }
-        else if (property_id == 3) { lat = 19.1030; lng = 72.8270; }
-        else if (property_id == 4) { lat = 19.2300; lng = 72.8340; }
-        else if (property_id == 5) { lat = 19.2310; lng = 72.8580; }
-
-        var map = L.map('map').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        L.marker([lat, lng]).addTo(map)
-            .bindPopup('<strong>' + propName + '</strong><br>' + propAddr)
-            .openPopup();
+        if (property_id == 1) { initMap(28.6430, 77.2150); }
+        else if (property_id == 2) { initMap(28.6425, 77.2120); }
+        else if (property_id == 3) { initMap(19.1030, 72.8270); }
+        else if (property_id == 4) { initMap(19.2300, 72.8340); }
+        else if (property_id == 5) { initMap(19.2310, 72.8580); }
+        else {
+            // Geocode using OSM Nominatim for new properties
+            var query = encodeURIComponent(propAddr);
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + query + '&countrycodes=in&limit=1')
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data && data.length > 0) {
+                        initMap(parseFloat(data[0].lat), parseFloat(data[0].lon));
+                    } else {
+                        // Fallback 1: split address and search for city, state, or postal code
+                        var parts = propAddr.split(',');
+                        if (parts.length > 1) {
+                            var fallbackQuery = encodeURIComponent(parts.slice(-2).join(',').trim());
+                            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + fallbackQuery + '&countrycodes=in&limit=1')
+                                .then(function(r) { return r.json(); })
+                                .then(function(d) {
+                                    if (d && d.length > 0) {
+                                        initMap(parseFloat(d[0].lat), parseFloat(d[0].lon));
+                                    } else {
+                                        initMap(lat, lng);
+                                    }
+                                })
+                                .catch(function() { initMap(lat, lng); });
+                        } else {
+                            initMap(lat, lng);
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    initMap(lat, lng);
+                });
+        }
     }
 
     // Submit Review Form Submission
@@ -115,13 +149,16 @@ var book_property_success = function (event) {
 
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
-        alert(response.message);
-        var btn_container = document.getElementById('book-now-btn').parentElement;
-        btn_container.innerHTML = '<button class="btn btn-success btn-block" disabled>Booked</button>';
+        showToast(response.message || 'Property booked successfully!', 'success');
+        var btn = document.getElementById('book-now-btn');
+        if (btn) {
+            var btn_container = btn.parentElement;
+            btn_container.innerHTML = '<button class="btn btn-success btn-block" disabled><i class="fas fa-check-circle mr-2"></i>Booked!</button>';
+        }
     } else if (!response.success && response.is_logged_in === false) {
         window.$('#login-modal').modal("show");
     } else {
-        alert(response.message);
+        showToast(response.message || 'Booking failed. Please try again.', 'error');
     }
 };
 
@@ -130,9 +167,14 @@ var add_review_success = function (event) {
 
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
-        alert(response.message);
-        location.reload();
+        showToast(response.message || 'Review submitted successfully! Thank you.', 'success');
+        setTimeout(function() { location.reload(); }, 1500);
     } else {
-        alert(response.message);
+        showToast(response.message || 'Failed to submit review.', 'error');
     }
+};
+
+var on_error = function () {
+    document.getElementById("loading").style.display = "none";
+    showToast('A network error occurred. Please check your connection.', 'error');
 };

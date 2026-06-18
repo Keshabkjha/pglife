@@ -28,14 +28,14 @@
     }
 
     // Insert user into Database
-    $sql_insert = "INSERT INTO users (email, password, full_name, phone, gender, institution_or_organization) VALUES (?, ?, ?, ?, ?, ?)";
+    $sql_insert = "INSERT INTO users (email, password, full_name, phone, gender, institution_or_organization, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt_insert = mysqli_prepare($conn, $sql_insert);
     if (!$stmt_insert) {
         echo json_encode(array("success" => false, "message" => "Something went wrong during user creation."));
         return;
     }
 
-    mysqli_stmt_bind_param($stmt_insert, "ssssss", $pending['email'], $pending['password'], $pending['full_name'], $pending['phone'], $pending['gender'], $pending['institution_or_organization']);
+    mysqli_stmt_bind_param($stmt_insert, "sssssss", $pending['email'], $pending['password'], $pending['full_name'], $pending['phone'], $pending['gender'], $pending['institution_or_organization'], $pending['role']);
     $result_insert = mysqli_stmt_execute($stmt_insert);
 
     if (!$result_insert) {
@@ -51,6 +51,7 @@
     $_SESSION['user_id'] = $user_id;
     $_SESSION['full_name'] = $pending['full_name'];
     $_SESSION['email'] = $pending['email'];
+    $_SESSION['role'] = $pending['role'];
 
     // Send Warm Welcome Email
     $subject = "Welcome to PGLife family! 🛏️";

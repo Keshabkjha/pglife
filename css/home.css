@@ -1,7 +1,6 @@
 .landing-image {    
     padding: 160px 20px;
-    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(../img/bg.jpg);
-    background-image: url(../img/bg.jpg);
+    background-image: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(../img/bg.jpg);
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
@@ -10,35 +9,90 @@
 @media (max-width: 768px) {
     .landing-image {
         padding: 100px 22px;
+        background-attachment: scroll;
     }
 }
 
 .search-box {    
-    max-width: 600px;
-    margin:auto;
+    max-width: 620px;
+    margin: auto;
 }
 
-.city-container{
+.search-box .form-control {
+    height: 50px;
+    font-size: 16px;
+    border-radius: 8px 0 0 8px;
+    border: none;
+    padding-left: 20px;
+}
+
+.search-box .btn {
+    height: 50px;
+    padding: 0 24px;
+    font-size: 18px;
+    border-radius: 0 8px 8px 0;
+}
+
+.search-box h2 {
+    font-size: 32px;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    margin-bottom: 28px;
+}
+
+@media (max-width: 768px) {
+    .search-box h2 {
+        font-size: 22px;
+    }
+}
+
+.city-container {
     text-align: center;
-    margin-top:55px;
+    margin-top: 36px;
+    margin-bottom: 10px;
+}
+
+.city-container a {
+    text-decoration: none;
+    color: inherit;
 }
 
 .city img {
-    height: 110px;
-    width: 110px;    
+    height: 90px;
+    width: 90px;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .city {
-    padding: 15px;
+    padding: 12px;
     background-color: #ffffff;
     border-radius: 50%;
     box-shadow: rgba(36, 31, 31, 0.2) 0px 2px 5px 0px;
     display: inline-block;
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    width: 116px;
+    height: 116px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
 }
 
-.city:focus,
-.city:hover {
-    box-shadow: rgba(36, 31, 31, 0.35) 0px 8px 15px 0px;
-    transform: translateY(-8px) scale(1.03);
+.city-container a:hover .city,
+.city-container a:focus .city {
+    box-shadow: rgba(36, 31, 31, 0.35) 0px 8px 20px 0px;
+    transform: translateY(-8px) scale(1.05);
 }
+
+.city-label {
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #444;
+    letter-spacing: 0.3px;
+}
+
+.city-container a:hover .city-label {
+    color: #007bff;
+}

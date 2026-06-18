@@ -65,6 +65,13 @@
                         <input type="radio" class="ml-3" id="gender-female" name="gender" value="female" required /> Female
                         <label for="gender-female"></label>
                     </div>
+                    <div class="form-group border-top pt-3">
+                        <span class="font-weight-bold">Profile Type:</span>
+                        <input type="radio" class="ml-3" id="role-seeker" name="role" value="seeker" checked required /> 
+                        <label for="role-seeker" class="mb-0">PG Seeker</label>
+                        <input type="radio" class="ml-3" id="role-owner" name="role" value="owner" required /> 
+                        <label for="role-owner" class="mb-0">PG Owner</label>
+                    </div>
 
                     <div class="form-group">
                         <button type="submit" class="btn btn-block btn-primary">Send Verification OTP</button>
@@ -73,7 +80,10 @@
 
                 <!-- OTP Verification Form -->
                 <form id="otp-form" class="form" role="form" style="display: none;">
-                    <p class="text-muted text-center">We have sent a 6-digit OTP code to your email. Please check your Mailhog inbox (http://localhost:8025) and enter it below to complete registration.</p>
+                    <div class="text-center mb-3">
+                        <i class="fas fa-envelope-open-text text-primary" style="font-size: 36px;"></i>
+                    </div>
+                    <p class="text-muted text-center">We have sent a <strong>6-digit OTP</strong> to your email address. Please check your inbox (and spam folder) and enter the code below to complete your registration.</p>
                     <div class="input-group form-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text">

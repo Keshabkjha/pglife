@@ -43,37 +43,97 @@
 
     <div class="page-container">
         <h1 class="text-center">
-            Major Cities
+            Explore PGs in Major Cities
         </h1>
-        <div class="row">
-            <div class="col-md-3 city-container">
-                <a href="property_list.php?city=Delhi" >
+        <div class="row justify-content-center">
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Delhi">
                     <div class="city">
-                        <img src="img/delhi.png" />
+                        <img src="img/delhi.png" alt="Delhi" />
                     </div>
+                    <div class="city-label">Delhi</div>
                 </a>
             </div>
-            <div class="col-md-3 city-container">
-                <a href="property_list.php?city=Mumbai" >
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Mumbai">
                     <div class="city">
-                        <img  src="img/mumbai.png" />
+                        <img src="img/mumbai.png" alt="Mumbai" />
                     </div>
+                    <div class="city-label">Mumbai</div>
                 </a>
             </div>
-            <div class="col-md-3 city-container">
-                <a href="property_list.php?city=Bengaluru" >
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Bengaluru">
                     <div class="city">
-                        <img src="img/bangalore.png" />
+                        <img src="img/bangalore.png" alt="Bengaluru" />
                     </div>
+                    <div class="city-label">Bengaluru</div>
                 </a>
             </div>
-            <div class="col-md-3 city-container">
-                <a href="property_list.php?city=Hyderabad" >
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Hyderabad">
                     <div class="city">
-                        <img src="img/hyderabad.png" />
+                        <img src="img/hyderabad.png" alt="Hyderabad" />
                     </div>
+                    <div class="city-label">Hyderabad</div>
                 </a>
-            </div>            
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Kolkata">
+                    <div class="city">
+                        <img src="img/kolkata.png" alt="Kolkata" />
+                    </div>
+                    <div class="city-label">Kolkata</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Chennai">
+                    <div class="city">
+                        <img src="img/chennai.png" alt="Chennai" />
+                    </div>
+                    <div class="city-label">Chennai</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Pune">
+                    <div class="city">
+                        <img src="img/pune.png" alt="Pune" />
+                    </div>
+                    <div class="city-label">Pune</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Ahmedabad">
+                    <div class="city">
+                        <img src="img/ahmedabad.png" alt="Ahmedabad" />
+                    </div>
+                    <div class="city-label">Ahmedabad</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Jaipur">
+                    <div class="city">
+                        <img src="img/jaipur.png" alt="Jaipur" />
+                    </div>
+                    <div class="city-label">Jaipur</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Noida">
+                    <div class="city">
+                        <img src="img/noida.png" alt="Noida" />
+                    </div>
+                    <div class="city-label">Noida</div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2 city-container">
+                <a href="property_list.php?city=Gurgaon">
+                    <div class="city">
+                        <img src="img/gurgaon.png" alt="Gurgaon" />
+                    </div>
+                    <div class="city-label">Gurgaon</div>
+                </a>
+            </div>
         </div>
     </div>
 

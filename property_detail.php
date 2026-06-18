@@ -34,6 +34,15 @@
         return;
     }
 
+    // Increment Views Count
+    $sql_views = "UPDATE properties SET views = views + 1 WHERE id = ?";
+    $stmt_views = mysqli_prepare($conn, $sql_views);
+    if ($stmt_views) {
+        mysqli_stmt_bind_param($stmt_views, "i", $property_id);
+        mysqli_stmt_execute($stmt_views);
+        mysqli_stmt_close($stmt_views);
+    }
+
     $sql_2 = "SELECT * FROM testimonials WHERE property_id = ?";
     $stmt_2 = mysqli_prepare($conn, $sql_2);
     if (!$stmt_2) {

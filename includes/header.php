@@ -68,8 +68,8 @@
                 </div>
                 <li class="nav-item">
                     <a class="nav-link" href="dashboard.php">
-                        <i class="fas fa-user"></i>Dashboard
-                        <?php if ($interested_count > 0 || $booking_count > 0) { ?>
+                        <i class="fas fa-user"></i><?= (isset($_SESSION['role']) && $_SESSION['role'] === 'owner') ? 'Owner Dashboard' : 'Dashboard' ?>
+                        <?php if (($interested_count > 0 || $booking_count > 0) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'owner')) { ?>
                             <span class="badge badge-pill badge-primary" style="font-size: 10px; padding: 3px 6px;">
                                 <?php if ($booking_count > 0) { ?>
                                     <i class="fas fa-bookmark" style="margin-right: 2px;"></i><?= $booking_count ?>

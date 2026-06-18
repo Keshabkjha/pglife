@@ -111,6 +111,14 @@ window.addEventListener("load", function () {
         chk.addEventListener("change", filterProperties);
     });
 
+    // Prevent dropdown from closing when clicking inside it
+    var dropdown_menu = document.querySelector(".dropdown-menu");
+    if (dropdown_menu) {
+        dropdown_menu.addEventListener("click", function (event) {
+            event.stopPropagation();
+        });
+    }
+
     // Client-side Sorting
     var sort_desc_btn = document.getElementById("sort-desc");
     if (sort_desc_btn) {

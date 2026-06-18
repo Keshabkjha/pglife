@@ -1,73 +1,120 @@
-# PGLife | Professional PG Booking System 🛏️
+# PGLife — Find Your Perfect PG 🏠
 
-A state-of-the-art, secure, containerized, and deployment-ready PG booking application built with PHP, MySQL, Apache, and Bootstrap. Designed to cater to students and working professionals.
+> **Industry-ready PG (Paying Guest) accommodation finder for India, built with PHP, MySQL, Leaflet Maps, and Bootstrap.**
 
----
-
-## Key Features & Enhancements
-
-### 🔒 Enterprise-Grade Security
-* **SQL Injection Prevention**: Prepared statements utilized across all database operations.
-* **XSS Mitigation**: Contextual escaping of all dynamic parameters using `htmlspecialchars()`.
-* **CSRF Protection**: Secure cryptographically strong anti-CSRF tokens validating all forms (login, signup, profile updates) and AJAX operations (book/cancel actions).
-* **Session Safety**: Regeneration of session IDs (`session_regenerate_id(true)`) upon successful authentication to block Session Fixation attacks.
-* **BCrypt Hashing**: Modern, secure password storage replacing outdated hash algorithms.
-
-### 🐳 Modern Infrastructure & Local Mail Trap
-* **Dockerized Environment**: Full containerization using Docker Compose (Apache, PHP 8.2, MySQL 8.0).
-* **Mailhog SMTP Trap**: Integrates a local mock SMTP server (Mailhog) to catch registration OTPs and transactional welcome emails at `http://localhost:8025` without external API dependencies.
-* **Socket SMTP Mailer**: Implemented custom SMTP socket connection protocols for rapid, secure email dispatch.
-
-### 🌟 Premium User Experience (UX/UI)
-* **Real-time Finder Filters**: Instant client-side text keyword searches, double-handle rent range sliders, and multi-amenity checkboxes.
-* **Instant Client-side Ordering**: Instantly toggle ordering (highest/lowest rent first) dynamically without full-page reloads.
-* **Interactive Maps**: Integrates Leaflet.js interactive maps on details pages.
-* **Ratings & Reviews System**: Real-time review submissions with dynamic client-side list rendering.
-* **Booking Cancellation**: Easy cancellations with smooth CSS transform & fade scale animations.
-* **Glassmorphism Backdrop Blurs**: Applied backdrop blur filters to modal dialog overlays for a modern feel.
-* **Real-time Navigation Badges**: Interactive counts for interested and booked properties displayed in the header.
+[![PHP](https://img.shields.io/badge/PHP-8.x-blue.svg)](https://php.net)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-orange.svg)](https://mysql.com)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-4.x-purple.svg)](https://getbootstrap.com)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://docker.com)
 
 ---
 
-## Tech Stack
-* **Web Server**: Apache HTTP Server (Dockerized)
-* **Backend**: PHP 8.2 with `mysqli` extension
-* **Database**: MySQL 8.0 (Dockerized)
-* **Mail Server**: Mailhog (Dockerized mock SMTP trap)
-* **Frontend**: HTML5, Vanilla CSS3, Javascript (ES6), Bootstrap 4, FontAwesome 5, Leaflet.js
+## ✨ Features
+
+### For PG Seekers
+- 🔍 **Smart Search** — Search PGs by city name across **11 major Indian cities**
+- 🏠 **Advanced Filters** — Filter by gender preference, max rent slider, and **13 amenities** (Wifi, AC, Power Backup, CCTV, Geyser, Parking & more)
+- 📊 **Sort** — Sort listings by highest / lowest rent
+- ❤️ **Interested** — Save properties you're interested in
+- 📅 **Book Now** — Book a PG directly from the detail page
+- ⭐ **Reviews** — Read and write user reviews with star ratings
+- 🗺️ **Live Map** — OpenStreetMap/Nominatim geocoding shows exact PG location
+- 👤 **Dashboard** — View booked and interested properties
+
+### For PG Owners
+- 🏢 **List PG** — Create full property listing with address, amenities, images, rent, and gender preference
+- 📈 **Analytics Dashboard** — Track Views, Bookings, and Average Ratings per property
+- 👥 **Tenant Management** — View all booking requests with seeker name, email & phone
+- 💬 **Review Monitoring** — Read all reviews submitted for your properties
+
+### Platform Features
+- 📧 **OTP Email Verification** — Secure signup with email OTP
+- 🎉 **Welcome Email** — Warm welcome mail on account creation
+- 🔒 **CSRF Protection** — All API endpoints protected with CSRF tokens
+- 🔄 **Smooth Page Transitions** — Fade-in/out animations on every navigation
+- 🍞 **Toast Notifications** — No more browser alert() popups — polished toast system
+- 📱 **Fully Responsive** — Works seamlessly on mobile, tablet and desktop
+- 🌐 **Role-based Auth** — Separate Seeker & Owner profiles
 
 ---
 
-## Getting Started
+## 🌆 Cities Covered
 
-### Prerequisites
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+Delhi • Mumbai • Bengaluru • Hyderabad • Kolkata • Chennai • Pune • Ahmedabad • Jaipur • Noida • Gurgaon
 
-### Spin up the Containers
-Run the following command in the root directory to spin up the server, database, and SMTP services:
+---
+
+## 🚀 Quick Start (Docker)
+
 ```bash
-docker compose up -d
+# Clone the repository
+git clone https://github.com/Keshabkjha/pglife.git
+cd pglife
+
+# Start all services (PHP + MySQL + Mailhog)
+docker-compose up -d
+
+# Open in browser
+http://localhost:8080
 ```
 
-### Access Ports
-* **Web Application**: [http://localhost:8080/home.php](http://localhost:8080/home.php)
-* **Mailhog Web Interface**: [http://localhost:8025](http://localhost:8025)
-* **MySQL Database**: Mapped to host port `3307`
+> **Mail testing:** Access Mailhog at `http://localhost:8025` to see OTP emails during development.
 
 ---
 
-## Seed Accounts for Testing
+## 🛠️ Manual Setup
 
-All test accounts share the password: `password`
+### Requirements
+- PHP 8.x with `mysqli` extension enabled
+- MySQL 8.0+
+- Apache / Nginx web server
 
-1. **Keshabkjha**
-   * **Email**: `keshab@example.com`
-2. **Ritesh Thakur**
-   * **Email**: `ritesh@example.com`
-3. **Puneet Pandey**
-   * **Email**: `puneet@example.com`
+### Steps
+1. Copy all files to your web server's root (e.g. `htdocs/pglife`)
+2. Create a MySQL database named `pglife`
+3. Import `database/pglife.sql`
+4. Update `includes/database_connect.php` with your DB credentials
+5. Open `http://localhost/pglife/home.php`
 
 ---
 
-## Author
-* **@[keshabkjha](https://github.com/Keshabkjha)**
+## 📁 Project Structure
+
+```
+pglife/
+├── api/                  # AJAX API endpoints (signup, login, booking, review, etc.)
+├── css/                  # Stylesheets (common, home, property_list, property_detail, dashboard)
+├── database/             # MySQL schema + seed data
+├── img/                  # City images, property images, amenity icons
+├── includes/             # PHP includes (header, footer, modals, database connect)
+├── js/                   # JavaScript files (common, home, property_list, property_detail, dashboard)
+├── docker-compose.yml    # Docker setup
+├── Dockerfile            # PHP + Apache image
+├── home.php              # Home page
+├── property_list.php     # City PG listing page
+├── property_detail.php   # Single property detail + map + reviews
+└── dashboard.php         # User/Owner dashboard
+```
+
+---
+
+## 🔐 Security
+
+- Prepared statements (PDO/MySQLi) — SQL injection protected
+- Password hashing with `password_hash()` (bcrypt)
+- CSRF token on all POST/state-changing actions
+- Email OTP verification on signup
+- Session-based authentication
+- Input validation and output escaping (`htmlspecialchars`)
+
+---
+
+## 👤 Author
+
+**[@Keshabkjha](https://github.com/Keshabkjha)**
+
+---
+
+## 📄 License
+
+© 2026 Keshabkjha. All rights reserved.

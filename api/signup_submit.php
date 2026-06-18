@@ -15,8 +15,9 @@
     $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
     $gender = isset($_POST['gender']) ? trim($_POST['gender']) : '';
     $institution_or_organization = isset($_POST['institution_or_organization']) ? trim($_POST['institution_or_organization']) : '';
+    $role = isset($_POST['role']) ? trim($_POST['role']) : 'seeker';
 
-    if (empty($email) || empty($password) || empty($full_name) || empty($phone) || empty($gender) || empty($institution_or_organization)) {
+    if (empty($email) || empty($password) || empty($full_name) || empty($phone) || empty($gender) || empty($institution_or_organization) || empty($role)) {
         $response = array("success" => false, "message" => "All fields are required.");
         echo json_encode($response);
         return;
@@ -42,6 +43,12 @@
 
     if ($gender !== 'male' && $gender !== 'female') {
         $response = array("success" => false, "message" => "Please select a valid gender.");
+        echo json_encode($response);
+        return;
+    }
+
+    if ($role !== 'seeker' && $role !== 'owner') {
+        $response = array("success" => false, "message" => "Please select a valid profile type.");
         echo json_encode($response);
         return;
     }
@@ -82,6 +89,7 @@
         'phone' => $phone,
         'gender' => $gender,
         'institution_or_organization' => $institution_or_organization,
+        'role' => $role,
         'otp' => $otp,
         'otp_expiry' => $otp_expiry
     ];

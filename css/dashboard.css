@@ -134,7 +134,41 @@
 
 .button-container .btn {
     font-size: 14px;
-    border-radius: 0px;
-    width: 140px;
-    float: right;
+    border-radius: 4px;
+    width: auto;
+    float: none;
+}
+
+/* Owner Dashboard Styles */
+.owner-stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: default;
+}
+
+.owner-stat-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+}
+
+.prop-performance-metrics .metric-item {
+    transition: background-color 0.2s ease;
+}
+
+.prop-performance-metrics .metric-item:hover {
+    background-color: #e9ecef !important;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.review-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-item:hover {
+    transform: translateX(3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }

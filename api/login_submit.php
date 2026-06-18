@@ -49,6 +49,7 @@
     $_SESSION['user_id'] = $row['id'];
     $_SESSION['full_name'] = $row['full_name'];
     $_SESSION['email'] = $row['email'];
+    $_SESSION['role'] = $row['role'];
 
     $response = array("success" => true, "message" => "Login successful!");
     echo json_encode($response);
