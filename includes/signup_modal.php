@@ -52,10 +52,10 @@
                     <div class="input-group form-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text">
-                                <i class="fas fa-university"></i>
+                                <i class="fas fa-building"></i>
                             </span>
                         </div>
-                        <input type="text" class="form-control" name="institution_or_organization" placeholder="Institution / Organization (College/Company)" maxlength="150" required>
+                        <input type="text" class="form-control" name="institution_or_organization" placeholder="College / Company (Optional)" maxlength="150">
                     </div>
 
                     <div class="form-group">

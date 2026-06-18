@@ -17,8 +17,8 @@
     $institution_or_organization = isset($_POST['institution_or_organization']) ? trim($_POST['institution_or_organization']) : '';
     $role = isset($_POST['role']) ? trim($_POST['role']) : 'seeker';
 
-    if (empty($email) || empty($password) || empty($full_name) || empty($phone) || empty($gender) || empty($institution_or_organization) || empty($role)) {
-        $response = array("success" => false, "message" => "All fields are required.");
+    if (empty($email) || empty($password) || empty($full_name) || empty($phone) || empty($gender) || empty($role)) {
+        $response = array("success" => false, "message" => "Please fill in all required fields.");
         echo json_encode($response);
         return;
     }
