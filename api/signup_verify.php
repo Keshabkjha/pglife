@@ -1,6 +1,13 @@
 <?php
     require("../includes/database_connect.php");
+    header('Content-Type: application/json; charset=utf-8');
     require("../includes/mail_helper.php");
+
+    $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
+        echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
+        return;
+    }
 
     $otp = isset($_POST['otp']) ? trim($_POST['otp']) : '';
 
@@ -16,13 +23,28 @@
 
     $pending = $_SESSION['pending_signup'];
 
+    // Rate limit OTP attempts (max 5)
+    if (!isset($_SESSION['otp_attempts'])) {
+        $_SESSION['otp_attempts'] = 0;
+    }
+    $_SESSION['otp_attempts']++;
+    if ($_SESSION['otp_attempts'] > 5) {
+        unset($_SESSION['pending_signup']);
+        unset($_SESSION['otp_attempts']);
+        echo json_encode(array("success" => false, "message" => "Too many failed attempts. Please register again."));
+        return;
+    }
+
     // Verify OTP and Expiration
     if ($pending['otp'] !== $otp) {
-        echo json_encode(array("success" => false, "message" => "Invalid OTP. Please try again."));
+        $remaining = 5 - $_SESSION['otp_attempts'];
+        echo json_encode(array("success" => false, "message" => "Invalid OTP. Please try again. Remaining attempts: " . $remaining));
         return;
     }
 
     if (time() > $pending['otp_expiry']) {
+        unset($_SESSION['pending_signup']);
+        unset($_SESSION['otp_attempts']);
         echo json_encode(array("success" => false, "message" => "OTP has expired. Please signup again."));
         return;
     }
@@ -52,6 +74,8 @@
     $_SESSION['full_name'] = $pending['full_name'];
     $_SESSION['email'] = $pending['email'];
     $_SESSION['role'] = $pending['role'];
+    $_SESSION['profile_pic'] = null;
+    $_SESSION['gender'] = $pending['gender'];
 
     // Send Warm Welcome Email
     $subject = "Welcome to PGLife family! 🛏️";
@@ -64,6 +88,7 @@
 
     // Clear session pending data
     unset($_SESSION['pending_signup']);
+    unset($_SESSION['otp_attempts']);
 
     echo json_encode(array("success" => true, "message" => "Account successfully verified and created!"));
     mysqli_close($conn);

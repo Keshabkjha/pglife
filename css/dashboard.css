@@ -26,13 +26,21 @@
 
 .edit-profile {
     cursor: pointer;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--primary-color);
+    transition: color 0.15s ease;
+}
+
+.edit-profile:hover {
+    color: var(--primary-hover);
     text-decoration: underline;
-    color: blue;
 }
 
 .interested-properties {
-    background-color: #fcfaf7;
+    background-color: #F8FAFC;
+    border-top: 1px solid var(--border-color);
 }
 
 .property-card {
@@ -78,9 +86,9 @@
 }
 
 .star-container i {
-    color: #EA322E;
-    font-size: 10px;
-    margin-right: 6px;
+    color: var(--warning-color);
+    font-size: 12px;
+    margin-right: 4px;
 }
 
 .interested-container {
@@ -88,13 +96,20 @@
 }
 
 .interested-container i {
-    color: #EA322E;
+    color: var(--accent-color);
     font-size: 20px;
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.interested-container i:hover {
+    transform: scale(1.2);
 }
 
 .interested-text {
-    font-size: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748B;
 }
 
 .detail-container {
@@ -171,4 +186,155 @@
 .review-item:hover {
     transform: translateX(3px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* ============ Mobile Responsiveness ============ */
+
+/* Profile section on mobile */
+@media (max-width: 768px) {
+    .user-profile .row {
+        text-align: center;
+    }
+    .user-profile .row > .col-md-9 .row {
+        flex-direction: column;
+        align-items: center;
+    }
+    .user-profile .row > .col-md-9 .col-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        text-align: center;
+    }
+    .user-profile .row > .col-md-9 .col-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        text-align: center;
+        margin-top: 12px;
+    }
+    .edit-profile {
+        display: inline-block;
+        padding: 6px 20px;
+        border: 1px solid var(--primary-color);
+        border-radius: 20px;
+        font-size: 13px;
+    }
+}
+
+/* Edit Profile Modal on mobile */
+@media (max-width: 576px) {
+    #edit-profile-modal .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    #edit-profile-modal .modal-body {
+        padding: 16px;
+    }
+    #edit-profile-modal .input-group {
+        flex-wrap: nowrap;
+    }
+    #edit-profile-modal .input-group .input-group-prepend {
+        flex-shrink: 0;
+    }
+    #edit-profile-modal .input-group .form-control {
+        min-width: 0;
+    }
+    #edit-profile-modal .custom-file-label {
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* Owner dashboard stat cards on mobile */
+@media (max-width: 576px) {
+    .owner-stat-card {
+        padding: 16px !important;
+    }
+    .owner-stat-card .stat-value {
+        font-size: 24px !important;
+    }
+    .owner-stat-card .stat-icon-wrapper {
+        font-size: 28px !important;
+    }
+    .owner-dashboard h1 {
+        font-size: 22px !important;
+    }
+    .owner-dashboard .btn-success {
+        margin-top: 10px;
+        width: 100%;
+    }
+}
+
+/* Add Property Modal on mobile */
+@media (max-width: 576px) {
+    #add-property-modal .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    #add-property-modal .modal-body {
+        padding: 12px !important;
+    }
+}
+
+/* Property cards on small screens */
+@media (max-width: 576px) {
+    .property-card {
+        padding: 12px 8px;
+    }
+    .property-name {
+        font-size: 16px;
+    }
+    .property-address {
+        font-size: 12px;
+    }
+    .rent {
+        font-size: 16px;
+    }
+    .button-container .btn {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+}
+
+/* ── Owner: Room Manager in Dashboard ─────────────────────── */
+.room-manager-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+.room-manager-row:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+.room-manager-row select, 
+.room-manager-row input[type=text], 
+.room-manager-row input[type=number] {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 100px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.room-manager-row select:focus, 
+.room-manager-row input:focus {
+    border-color: var(--primary-color);
+}
+.room-manager-row .rm-delete-btn {
+    border-radius: 6px;
+    height: 34px;
+    width: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
 }

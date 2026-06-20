@@ -1,6 +1,6 @@
 <?php
-    session_start();
     require("../includes/database_connect.php");
+    header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
@@ -10,6 +10,11 @@
 
     if (!isset($_SESSION['user_id'])) {
         echo json_encode(array("success" => false, "is_logged_in" => false, "message" => "Please login to book a property."));
+        return;
+    }
+
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'seeker') {
+        echo json_encode(array("success" => false, "message" => "Unauthorized access. Only seekers can book properties."));
         return;
     }
 

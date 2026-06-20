@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    header('Content-Type: application/json; charset=utf-8');
     require("../includes/mail_helper.php");
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -29,8 +30,8 @@
         return;
     }
 
-    if (strlen($password) < 6) {
-        $response = array("success" => false, "message" => "Password must be at least 6 characters long.");
+    if (strlen($password) < 8) {
+        $response = array("success" => false, "message" => "Password must be at least 8 characters long.");
         echo json_encode($response);
         return;
     }
@@ -78,7 +79,7 @@
     }
 
     // Generate 6-digit OTP code
-    $otp = (string)mt_rand(100000, 999999);
+    $otp = (string)random_int(100000, 999999);
     $otp_expiry = time() + 300; // 5 minutes
 
     // Store pending signup data in session

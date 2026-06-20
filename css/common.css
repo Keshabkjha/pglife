@@ -1,12 +1,31 @@
+:root {
+    --primary-color: #4F46E5;        /* Premium Indigo */
+    --primary-hover: #4338CA;
+    --secondary-color: #0F172A;      /* Slate 900 */
+    --text-color: #334155;           /* Slate 700 */
+    --accent-color: #FF6B6B;         /* Coral for hearts */
+    --warning-color: #F59E0B;        /* Amber for ratings/stars */
+    --success-color: #10B981;        /* Emerald */
+    --light-bg: #F8FAFC;             /* Slate 50 */
+    --border-color: #E2E8F0;         /* Slate 200 */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --font-primary: 'Outfit', sans-serif;
+    --font-secondary: 'Inter', sans-serif;
+}
+
 * {
     box-sizing: border-box;
-    font-family: 'Open Sans', sans-serif;
+    font-family: var(--font-secondary);
 }
 
 body {
-    color: #373737;
+    color: var(--text-color);
+    background-color: var(--light-bg);
     font-size: 16px;
     position: relative;
+    opacity: 0;
 }
 
 h1,
@@ -15,15 +34,15 @@ h3,
 h4,
 h5,
 h6 {
-    font-weight: 600;
+    font-family: var(--font-primary);
+    color: var(--secondary-color);
+    font-weight: 700;
 }
 
 h1 {
     font-size: 36px;
-}
-
-h1, h2 {
-    margin-bottom: 40px;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
 }
 
 @media (max-width: 768px) {
@@ -42,11 +61,62 @@ h5 {
     margin-bottom: 10px;
 }
 
-.btn-primary,
-.btn-warning,
+/* Premium Buttons Styling */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 10px 20px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: var(--font-primary);
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
+    color: white !important;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+}
+
 .btn-danger {
-    color: white;
-    font-weight: bold;
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: white !important;
+}
+
+.btn-danger:hover, .btn-danger:focus {
+    background-color: #E05252 !important;
+    border-color: #E05252 !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
 }
 
 .input-group .input-group-text i {
@@ -56,29 +126,23 @@ h5 {
 input[type="radio"] {
     position: relative;
     top: 1px;
-}
-
-.breadcrumb {
-    background-color: #e5e3e8;
-    font-size: 13px;
-    border-radius: 0px;
-    margin-bottom: 0px;
+    accent-color: var(--primary-color);
 }
 
 .container {
-    max-width: 920px;
+    max-width: 960px;
     padding: 0px 20px;
 }
 
 .page-container {
-    max-width: 800px;
-    padding: 80px 24px;
+    max-width: 960px;
+    padding: 60px 24px;
     margin: auto;
 }
 
 @media (max-width: 768px) {
     .page-container {
-        padding: 64px 24px;
+        padding: 40px 20px;
     }
 }
 
@@ -88,11 +152,12 @@ input[type="radio"] {
 
 #loading {
     display: none;
-    background-color: #666666;
+    background-color: rgba(15, 23, 42, 0.6);
     background-image: url("../img/progress_spinner.gif");
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.4;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     position: fixed;
     top: 0px;
     right: 0px;
@@ -101,35 +166,80 @@ input[type="radio"] {
     z-index: 10000000;
 }
 
-/* Login Modal */
-#login-modal .modal-dialog {
-    width: 350px;
-    margin: auto;
+/* Modals */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 20px 24px;
+}
+
+.modal-header .modal-title {
+    font-family: var(--font-primary);
+    font-weight: 700;
+    color: var(--secondary-color);
+}
+
+.modal-body {
+    padding: 24px;
 }
 
 .modal-footer {
-    background-color: #f4f4f4;
+    background-color: var(--light-bg);
+    border-top: 1px solid var(--border-color);
     justify-content: center;
+    padding: 16px 24px;
 }
 
-/* Header */
+/* Header Navbar */
 .header {
-    background-color: white;
-    font-size: 13px;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    box-shadow: var(--shadow-sm);
+    z-index: 1030;
+}
+
+.header .navbar {
+    padding: 12px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .header .navbar .navbar-brand img {
-    height: 40px;
+    height: 36px;
 }
 
 .header .navbar .nav-item i {
     margin-right: 8px;
+    color: var(--primary-color);
+}
+
+.header .navbar .nav-link {
+    color: var(--text-color) !important;
+    font-weight: 600;
+    padding: 6px 12px !important;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.header .navbar .nav-link:hover {
+    color: var(--primary-color) !important;
+    background-color: rgba(79, 70, 229, 0.08);
 }
 
 .header .nav-vl {
-    border-left: 2px solid #d6d6d678;
+    border-left: 1px solid var(--border-color);
     height: 24px;
-    margin: auto 16px;
+    margin: auto 12px;
     display: block;
 }
 
@@ -140,81 +250,85 @@ input[type="radio"] {
 }
 
 .header .nav-name {
-    font-weight: bold;
-    margin: auto 16px;
+    font-weight: 700;
+    color: var(--secondary-color);
+    margin: auto 12px;
 }
 
 @media(max-width:768px) {
     .header .nav-name {
-        margin: 8px 0px
+        margin: 8px 0px;
     }
 }
 
 /* Footer */
 .footer {
-    background-color: #1e1e2e;
-    font-size: 13px;
+    background-color: #0F172A;
+    font-size: 14px;
     border-top: 1px solid rgba(255,255,255,0.05);
 }
 
 .footer-container {
-    padding: 36px 24px 24px;
+    padding: 48px 24px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .footer-cities {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 24px;
+    gap: 12px 28px;
+    margin-bottom: 24px;
 }
 
 .footer-city {
-    margin-bottom: 8px;
     text-align: center;
 }
 
 @media(max-width:768px) {
     .footer-city {
-        width: calc(50% - 24px);
+        width: calc(50% - 28px);
     }
 }
 
 .footer-city a {
-    color: #b0b0c3;
+    color: #94A3B8;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 .footer-city a:hover {
     color: #ffffff;
-    text-decoration: underline;
+    text-shadow: 0 0 2px rgba(255,255,255,0.3);
 }
 
 .footer-copyright {
-    color: #666680;
+    color: #475569;
     text-align: center;
     padding-top: 24px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    margin-top: 16px;
-    font-size: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px;
+    font-weight: 500;
 }
 
 /* Modal Glassmorphism Blur */
 .modal-backdrop.show {
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    background-color: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    background-color: rgba(15, 23, 42, 0.4) !important;
 }
 
 /* Page Fade-In Animation */
 body {
-    animation: fadeInPage 0.4s ease-out both;
+    animation: fadeInPage 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes fadeInPage {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -222,31 +336,69 @@ body {
     }
 }
 
-/* Button hover transitions */
-.btn {
+/* Input Fields Styling */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    padding: 10px 14px;
+    font-size: 15px;
+    color: var(--secondary-color);
     transition: all 0.2s ease;
 }
 
-/* Card hover effect */
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    outline: none;
+}
+
+.input-group-text {
+    border-radius: 8px 0 0 8px;
+    border: 1px solid var(--border-color);
+    border-right: none;
+    background-color: #F1F5F9;
+    color: #64748B;
+}
+
+.input-group > .form-control {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Card Transitions */
 .card {
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Input focus transitions */
-.form-control {
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+.card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
-/* Navbar link hover */
-.header .nav-link {
-    transition: color 0.2s ease;
-    position: relative;
-}
-
-/* Breadcrumb spacing */
+/* Breadcrumbs Styling */
 .breadcrumb {
+    background-color: #F1F5F9;
+    font-size: 13px;
     border-radius: 0;
     margin-bottom: 0;
-    font-size: 13px;
-    padding: 10px 20px;
-}
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+}
+
+.breadcrumb-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: #64748B;
+}

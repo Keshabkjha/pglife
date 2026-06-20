@@ -1,0 +1,399 @@
+/* Contextual In-App Chat and Bargaining Widget Styles */
+
+#chat-box-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 360px;
+    height: 480px;
+    z-index: 1060;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    display: none; /* Controlled by JS */
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+#chat-box-widget.minimized {
+    height: 60px;
+}
+
+/* Chat Header */
+.chat-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: #ffffff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.chat-contact-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.chat-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.chat-title-text {
+    line-height: 1.2;
+}
+
+.chat-contact-name {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.chat-property-context {
+    font-size: 10px;
+    opacity: 0.8;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-control-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    opacity: 0.8;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    transition: opacity 0.2s;
+}
+
+.chat-control-btn:hover {
+    opacity: 1;
+}
+
+/* Chat Messages Area */
+.chat-messages-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background-color: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Message Bubbles */
+.chat-message-row {
+    display: flex;
+    width: 100%;
+}
+
+.chat-message-row.sent {
+    justify-content: flex-end;
+}
+
+.chat-message-row.received {
+    justify-content: flex-start;
+}
+
+.chat-bubble {
+    max-width: 75%;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.4;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.chat-message-row.sent .chat-bubble {
+    background: #1e3c72;
+    color: #ffffff;
+    border-radius: 12px 12px 0px 12px;
+}
+
+.chat-message-row.received .chat-bubble {
+    background: #ffffff;
+    color: #334155;
+    border-radius: 12px 12px 12px 0px;
+    border: 1px solid #e2e8f0;
+}
+
+.chat-time-meta {
+    font-size: 9px;
+    display: block;
+    margin-top: 4px;
+    text-align: right;
+    opacity: 0.7;
+}
+
+/* Read Receipts */
+.read-receipt {
+    font-size: 10px;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.read-receipt.read {
+    color: #38bdf8; /* Blue */
+}
+
+.read-receipt.unread {
+    color: #94a3b8; /* Gray */
+}
+
+/* Bargaining Offer Cards */
+.chat-offer-card {
+    background: #fff9e6;
+    border: 1px solid #ffe28c;
+    border-radius: 10px;
+    padding: 12px;
+    width: 100%;
+    margin: 4px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.chat-offer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #b7791f;
+}
+
+.chat-offer-amount {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e3c72;
+    margin-bottom: 4px;
+}
+
+.chat-offer-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.offer-btn {
+    flex: 1;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.offer-btn.accept {
+    background-color: #28a745;
+    color: #ffffff;
+}
+
+.offer-btn.accept:hover {
+    background-color: #218838;
+}
+
+.offer-btn.decline {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+.offer-btn.decline:hover {
+    background-color: #c82333;
+}
+
+/* System Message Bubble */
+.chat-message-row.system {
+    justify-content: center;
+}
+
+.chat-message-row.system .chat-bubble {
+    background: #e2e8f0;
+    color: #475569;
+    border-radius: 8px;
+    max-width: 90%;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    border: none;
+    box-shadow: none;
+}
+
+/* Quick Replies Area */
+.chat-quick-replies {
+    padding: 6px 12px;
+    background: #f1f5f9;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none; /* Hide scrollbars */
+}
+
+.chat-quick-replies::-webkit-scrollbar {
+    display: none;
+}
+
+.quick-reply-chip {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #475569;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.quick-reply-chip:hover {
+    background: #1e3c72;
+    color: #ffffff;
+    border-color: #1e3c72;
+}
+
+/* Bargaining Form Modal inside Chat */
+.chat-offer-input-container {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    display: none; /* Controlled by JS */
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-offer-input-container input {
+    flex-grow: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+/* Chat Footer / Input area */
+.chat-footer {
+    padding: 10px 12px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-input {
+    flex-grow: 1;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 13px;
+    max-height: 80px;
+    resize: none;
+    outline: none;
+    background: #f8fafc;
+}
+
+.chat-input:focus {
+    border-color: #1e3c72;
+    background: #ffffff;
+}
+
+.chat-action-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.chat-action-btn.send-msg {
+    color: #1e3c72;
+}
+
+.chat-action-btn.bargain-msg {
+    color: #eab308; /* Yellow */
+}
+
+.chat-action-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Chat Unread counts badge in lists */
+.chat-unread-badge {
+    background-color: #dc3545;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* Chats tab row elements */
+.chat-thread-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chat-thread-row:hover {
+    background-color: #f8fafc !important;
+}
+
+/* Typing Indicator Animation */
+.typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: #ffffff;
+    border-radius: 12px;
+    width: fit-content;
+    border: 1px solid #e2e8f0;
+    margin-left: 16px;
+    font-size: 11px;
+    color: #64748b;
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite ease-in-out both;
+}
+
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+
+@keyframes typingBounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}

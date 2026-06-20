@@ -1,0 +1,63 @@
+Options -Indexes
+Options +FollowSymLinks
+DirectoryIndex home.php
+
+RewriteEngine On
+
+# -----------------------------------------------
+# Force trailing-slash-free, extension-free URLs
+# -----------------------------------------------
+
+# Serve real files and directories as-is (images, CSS, JS, api/, etc.)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# API endpoints — never rewrite (keep /api/*.php working internally)
+RewriteRule ^api/ - [L]
+
+# ---- Clean URL Routing ----
+
+# /                    → home.php
+RewriteRule ^$            home.php [L,QSA]
+
+# /home                → home.php
+RewriteRule ^home/?$      home.php [L,QSA]
+
+# /properties/CityName → property_list.php?city=CityName
+RewriteRule ^properties/([^/]+)/?$  property_list.php?city=$1 [L,QSA]
+
+# /pg/ID               → property_detail.php?property_id=ID
+RewriteRule ^pg/([0-9]+)/?$         property_detail.php?property_id=$1 [L,QSA]
+
+# /dashboard           → dashboard.php
+RewriteRule ^dashboard/?$ dashboard.php [L,QSA]
+
+# /logout              → logout.php
+RewriteRule ^logout/?$    logout.php [L,QSA]
+
+# Redirect old .php URLs to clean URLs (301 permanent)
+# Works in both root and subdirectories (e.g., /pglife/home.php -> /pglife/home)
+
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^\ ]*/)?home\.php [NC]
+RewriteRule ^home\.php$ /%1home [R=301,L]
+
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^\ ]*/)?dashboard\.php [NC]
+RewriteRule ^dashboard\.php$ /%1dashboard [R=301,L]
+
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^\ ]*/)?logout\.php [NC]
+RewriteRule ^logout\.php$ /%1logout [R=301,L]
+
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^\ ]*/)?property_list\.php\?city=([^\&\ ]+) [NC]
+RewriteRule ^property_list\.php$ /%1properties/%2? [R=301,L]
+
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^\ ]*/)?property_detail\.php\?property_id=([0-9]+) [NC]
+RewriteRule ^property_detail\.php$ /%1pg/%2? [R=301,L]
+
+# ---- Security HTTP Headers ----
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

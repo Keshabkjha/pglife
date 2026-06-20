@@ -1,5 +1,5 @@
 <?php
-    session_start();
+    require_once "includes/database_connect.php";
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +15,7 @@
         include "includes/head_links.php";
     ?>
 
-    <link href="css/home.css" rel="stylesheet">
+    <link href="css/home.css?v=2" rel="stylesheet">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
             <h2 class="white text-center">
                 Happiness per Square Foot
             </h2>
-            <form id="search-form" action="property_list.php" method="GET">
+            <form id="search-form" onsubmit="handleSearch(event)">
                 <div class="input-group">
                     <input class="form-control" type="text" name="city" id="search-city" placeholder="Enter your city to search for PGs" />
                     <div class="input-group-append">
@@ -47,89 +47,89 @@
         </h1>
         <div class="row justify-content-center">
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Delhi">
+                <a href="/properties/Delhi">
                     <div class="city">
-                        <img src="img/delhi.png" alt="Delhi" />
+                        <img src="img/delhi.png?v=2" alt="Delhi" />
                     </div>
                     <div class="city-label">Delhi</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Mumbai">
+                <a href="/properties/Mumbai">
                     <div class="city">
-                        <img src="img/mumbai.png" alt="Mumbai" />
+                        <img src="img/mumbai.png?v=2" alt="Mumbai" />
                     </div>
                     <div class="city-label">Mumbai</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Bengaluru">
+                <a href="/properties/Bengaluru">
                     <div class="city">
-                        <img src="img/bangalore.png" alt="Bengaluru" />
+                        <img src="img/bangalore.png?v=2" alt="Bengaluru" />
                     </div>
                     <div class="city-label">Bengaluru</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Hyderabad">
+                <a href="/properties/Hyderabad">
                     <div class="city">
-                        <img src="img/hyderabad.png" alt="Hyderabad" />
+                        <img src="img/hyderabad.png?v=2" alt="Hyderabad" />
                     </div>
                     <div class="city-label">Hyderabad</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Kolkata">
+                <a href="/properties/Kolkata">
                     <div class="city">
-                        <img src="img/kolkata.png" alt="Kolkata" />
+                        <img src="img/kolkata.png?v=2" alt="Kolkata" />
                     </div>
                     <div class="city-label">Kolkata</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Chennai">
+                <a href="/properties/Chennai">
                     <div class="city">
-                        <img src="img/chennai.png" alt="Chennai" />
+                        <img src="img/chennai.png?v=2" alt="Chennai" />
                     </div>
                     <div class="city-label">Chennai</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Pune">
+                <a href="/properties/Pune">
                     <div class="city">
-                        <img src="img/pune.png" alt="Pune" />
+                        <img src="img/pune.png?v=2" alt="Pune" />
                     </div>
                     <div class="city-label">Pune</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Ahmedabad">
+                <a href="/properties/Ahmedabad">
                     <div class="city">
-                        <img src="img/ahmedabad.png" alt="Ahmedabad" />
+                        <img src="img/ahmedabad.png?v=2" alt="Ahmedabad" />
                     </div>
                     <div class="city-label">Ahmedabad</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Jaipur">
+                <a href="/properties/Jaipur">
                     <div class="city">
-                        <img src="img/jaipur.png" alt="Jaipur" />
+                        <img src="img/jaipur.png?v=2" alt="Jaipur" />
                     </div>
                     <div class="city-label">Jaipur</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Noida">
+                <a href="/properties/Noida">
                     <div class="city">
-                        <img src="img/noida.png" alt="Noida" />
+                        <img src="img/noida.png?v=2" alt="Noida" />
                     </div>
                     <div class="city-label">Noida</div>
                 </a>
             </div>
             <div class="col-6 col-md-3 col-lg-2 city-container">
-                <a href="property_list.php?city=Gurgaon">
+                <a href="/properties/Gurgaon">
                     <div class="city">
-                        <img src="img/gurgaon.png" alt="Gurgaon" />
+                        <img src="img/gurgaon.png?v=2" alt="Gurgaon" />
                     </div>
                     <div class="city-label">Gurgaon</div>
                 </a>
@@ -144,6 +144,13 @@
     ?>
     
     <script type="text/javascript" src="js/home.js"></script>
+    <script>
+        function handleSearch(e) {
+            e.preventDefault();
+            var city = document.getElementById('search-city').value.trim();
+            if (city) navigateTo('/properties/' + encodeURIComponent(city));
+        }
+    </script>
 </body>
 
 </html>

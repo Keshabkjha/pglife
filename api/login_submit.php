@@ -1,6 +1,6 @@
 <?php
-    session_start();
     require("../includes/database_connect.php");
+    header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
@@ -50,6 +50,8 @@
     $_SESSION['full_name'] = $row['full_name'];
     $_SESSION['email'] = $row['email'];
     $_SESSION['role'] = $row['role'];
+    $_SESSION['profile_pic'] = $row['profile_pic'];
+    $_SESSION['gender'] = $row['gender'];
 
     $response = array("success" => true, "message" => "Login successful!");
     echo json_encode($response);

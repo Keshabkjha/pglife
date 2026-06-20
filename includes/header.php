@@ -37,7 +37,7 @@
 ?>
 <div class="header sticky-top">
     <nav class="navbar navbar-expand-md navbar-light">
-        <a class="navbar-brand" href="home.php">
+        <a class="navbar-brand" href="/home">
             <img src="img/logo.png" />
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#my-navbar">
@@ -63,11 +63,20 @@
                 <?php
                     } else {
                 ?>
-                <div class='nav-name'>
+                <div class='nav-name d-flex align-items-center'>
+                    <?php
+                        $header_avatar = 'img/man.png';
+                        if (!empty($_SESSION['profile_pic'])) {
+                            $header_avatar = $_SESSION['profile_pic'];
+                        } elseif (isset($_SESSION['gender']) && $_SESSION['gender'] === 'female') {
+                            $header_avatar = 'img/Female_icon.png';
+                        }
+                    ?>
+                    <img src="<?= $header_avatar ?>" class="rounded-circle mr-2" style="width: 25px; height: 25px; object-fit: cover; border: 1px solid rgba(0,0,0,0.1);" alt="Avatar" />
                     Hi, <?= htmlspecialchars($_SESSION["full_name"]) ?>
                 </div>
                 <li class="nav-item">
-                    <a class="nav-link" href="dashboard.php">
+                    <a class="nav-link" href="/dashboard">
                         <i class="fas fa-user"></i><?= (isset($_SESSION['role']) && $_SESSION['role'] === 'owner') ? 'Owner Dashboard' : 'Dashboard' ?>
                         <?php if (($interested_count > 0 || $booking_count > 0) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'owner')) { ?>
                             <span class="badge badge-pill badge-primary" style="font-size: 10px; padding: 3px 6px;">
@@ -83,7 +92,7 @@
                 </li>
                 <div class="nav-vl"></div>
                 <li class="nav-item">
-                    <a class="nav-link" href="logout.php">
+                    <a class="nav-link" href="/logout">
                         <i class="fas fa-sign-out-alt"></i>Logout
                     </a>
                 </li> 

@@ -352,7 +352,8 @@ ALTER TABLE `testimonials`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_email` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -442,6 +443,7 @@ CREATE TABLE `bookings` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `property_id` (`property_id`),
+  UNIQUE KEY `unique_user_property` (`user_id`, `property_id`),
   CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`property_id`) REFERENCES `properties` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

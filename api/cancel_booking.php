@@ -1,6 +1,6 @@
 <?php
-    session_start();
     require("../includes/database_connect.php");
+    header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
@@ -31,10 +31,13 @@
     mysqli_stmt_bind_param($stmt, "ii", $user_id, $property_id);
     $result = mysqli_stmt_execute($stmt);
 
-    if (!$result) {
-        echo json_encode(array("success" => false, "message" => "Something went wrong!"));
+    if (!$result || mysqli_affected_rows($conn) === 0) {
+        echo json_encode(array("success" => false, "message" => "Booking not found or already cancelled."));
+        mysqli_stmt_close($stmt);
         return;
     }
+
+    mysqli_stmt_close($stmt);
 
     echo json_encode(array("success" => true, "message" => "Booking successfully cancelled.", "property_id" => $property_id));
     mysqli_close($conn);

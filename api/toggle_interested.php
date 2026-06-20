@@ -1,20 +1,24 @@
 <?php
-    session_start();
-    
     require "../includes/database_connect.php";
+    header('Content-Type: application/json; charset=utf-8');
     if(!isset($_SESSION['user_id'])) {
         echo json_encode(array("success" => false, "is_logged_in" => false));
         return;
     }
 
-    $csrf_token = isset($_GET['csrf_token']) ? $_GET['csrf_token'] : '';
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'seeker') {
+        echo json_encode(array("success" => false, "message" => "Unauthorized access. Only seekers can express interest in properties."));
+        return;
+    }
+
+    $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
         echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
         return;
     }
 
     $user_id = (int)$_SESSION['user_id'];
-    $property_id = isset($_GET['property_id']) ? (int)$_GET['property_id'] : 0;
+    $property_id = isset($_POST['property_id']) ? (int)$_POST['property_id'] : 0;
 
     if ($property_id <= 0) {
         echo json_encode(array("success" => false, "message" => "Invalid property ID"));

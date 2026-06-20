@@ -22,13 +22,17 @@ services:
       - "8080:80"
     volumes:
       - .:/var/www/html
+    env_file:
+      - .env
     environment:
       DB_HOST: db
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: pglife
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
     depends_on:
       - db
       - mailhog

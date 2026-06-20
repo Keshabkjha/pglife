@@ -74,7 +74,7 @@ http://localhost:8080
 2. Create a MySQL database named `pglife`
 3. Import `database/pglife.sql`
 4. Update `includes/database_connect.php` with your DB credentials
-5. Open `http://localhost/pglife/home.php`
+5. Open `http://localhost/pglife/home`
 
 ---
 

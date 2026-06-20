@@ -12,9 +12,10 @@ window.addEventListener ("load", function () {
             // on error
             XHR.addEventListener("error", on_error);
             // set up request
-            XHR.open ("GET", "api/toggle_interested.php?property_id=" + property_id + "&csrf_token=" + window.csrf_token);
+            XHR.open("POST", "api/toggle_interested.php");
+            XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             // initiate the request
-            XHR.send();
+            XHR.send("property_id=" + encodeURIComponent(property_id) + "&csrf_token=" + encodeURIComponent(window.csrf_token));
 
             document.getElementById("loading").style.display = "block";
             event.preventDefault();
@@ -59,14 +60,13 @@ window.addEventListener ("load", function () {
                 .openPopup();
         }
 
-        // vary mock coordinates slightly based on property_id
-        if (property_id == 1) { initMap(28.6430, 77.2150); }
-        else if (property_id == 2) { initMap(28.6425, 77.2120); }
-        else if (property_id == 3) { initMap(19.1030, 72.8270); }
-        else if (property_id == 4) { initMap(19.2300, 72.8340); }
-        else if (property_id == 5) { initMap(19.2310, 72.8580); }
-        else {
-            // Geocode using OSM Nominatim for new properties
+        var latAttr = map_el.getAttribute("data-lat");
+        var lngAttr = map_el.getAttribute("data-lng");
+
+        if (latAttr && lngAttr) {
+            initMap(parseFloat(latAttr), parseFloat(lngAttr));
+        } else {
+            // Geocode using OSM Nominatim for legacy properties
             var query = encodeURIComponent(propAddr);
             fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + query + '&countrycodes=in&limit=1')
                 .then(function(response) { return response.json(); })
@@ -168,7 +168,13 @@ var add_review_success = function (event) {
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
         showToast(response.message || 'Review submitted successfully! Thank you.', 'success');
-        setTimeout(function() { location.reload(); }, 1500);
+        setTimeout(function() {
+            var el = document.body;
+            el.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            setTimeout(function() { location.reload(); }, 250);
+        }, 1250);
     } else {
         showToast(response.message || 'Failed to submit review.', 'error');
     }

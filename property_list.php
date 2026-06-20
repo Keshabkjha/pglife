@@ -6,47 +6,56 @@
     $city_name = isset($_GET["city"]) ? trim($_GET["city"]) : '';
 
     if (empty($city_name)) {
-        echo "City name is required.";
-        return;
+        header("Location: /home");
+        exit;
     }
 
     $sql_1 = "SELECT * FROM cities WHERE name = ?";
     $stmt_1 = mysqli_prepare($conn, $sql_1);
     if (!$stmt_1) {
-        echo "Something went wrong!";
-        return;
+        header("Location: /home");
+        exit;
     }
     mysqli_stmt_bind_param($stmt_1, "s", $city_name);
     mysqli_stmt_execute($stmt_1);
     $result_1 = mysqli_stmt_get_result($stmt_1);
     if (!$result_1) {
-        echo "Something went wrong!";
-        return;
+        mysqli_stmt_close($stmt_1);
+        header("Location: /home");
+        exit;
     }
 
     $city = mysqli_fetch_assoc($result_1);
+    mysqli_stmt_close($stmt_1);
     if (!$city) {
-        echo "Sorry! We do not have any PG listed in this city.";
-        return;
+        header("Location: /home");
+        exit;
     }
 
     $city_id = $city['id'];
 
-    $sql_2 = "SELECT * FROM properties WHERE city_id = ?";
+    $sql_2 = "SELECT p.*, GROUP_CONCAT(a.name) AS amenities_list 
+              FROM properties p 
+              LEFT JOIN properties_amenities pa ON p.id = pa.property_id 
+              LEFT JOIN amenities a ON pa.amenity_id = a.id 
+              WHERE p.city_id = ? 
+              GROUP BY p.id";
     $stmt_2 = mysqli_prepare($conn, $sql_2);
     if (!$stmt_2) {
-        echo "Something went wrong!";
-        return;
+        header("Location: /home");
+        exit;
     }
     mysqli_stmt_bind_param($stmt_2, "i", $city_id);
     mysqli_stmt_execute($stmt_2);
     $result_2 = mysqli_stmt_get_result($stmt_2);
     if (!$result_2) {
-        echo "Something went wrong!";
-        return;
+        mysqli_stmt_close($stmt_2);
+        header("Location: /home");
+        exit;
     }
 
     $properties = mysqli_fetch_all($result_2, MYSQLI_ASSOC);
+    mysqli_stmt_close($stmt_2);
 
     $sql_3 = "SELECT iup.* 
                 FROM interested_users_properties iup
@@ -54,18 +63,59 @@
                 WHERE p.city_id = ?";
     $stmt_3 = mysqli_prepare($conn, $sql_3);
     if (!$stmt_3) {
-        echo "Something went wrong!";
-        return;
+        header("Location: /home");
+        exit;
     }
     mysqli_stmt_bind_param($stmt_3, "i", $city_id);
     mysqli_stmt_execute($stmt_3);
     $result_3 = mysqli_stmt_get_result($stmt_3);
     if (!$result_3) {
-        echo "Something went wrong!";
-        return;
+        mysqli_stmt_close($stmt_3);
+        header("Location: /home");
+        exit;
     }
 
     $interested_users_properties = mysqli_fetch_all($result_3, MYSQLI_ASSOC);
+    mysqli_stmt_close($stmt_3);
+
+    // Pre-index interested users data for O(1) lookups during rendering
+    $interested_map = [];
+    foreach ($interested_users_properties as $iup) {
+        $pid = (int)$iup['property_id'];
+        $uid = (int)$iup['user_id'];
+        if (!isset($interested_map[$pid])) {
+            $interested_map[$pid] = [
+                'count' => 0,
+                'user_ids' => []
+            ];
+        }
+        $interested_map[$pid]['count']++;
+        $interested_map[$pid]['user_ids'][] = $uid;
+    }
+
+    // Fetch room availability summary per property in this city
+    $sql_rooms = "SELECT rt.property_id,
+                         SUM(rt.total_beds) AS total_beds,
+                         SUM(rt.occupied_beds) AS occupied_beds,
+                         SUM(rt.total_beds - rt.occupied_beds) AS available_beds,
+                         COUNT(*) AS room_type_count
+                   FROM room_types rt
+                   INNER JOIN properties p ON rt.property_id = p.id
+                   WHERE p.city_id = ? AND rt.is_active = 1
+                   GROUP BY rt.property_id";
+    $stmt_rooms = mysqli_prepare($conn, $sql_rooms);
+    $room_avail_map = [];
+    if ($stmt_rooms) {
+        mysqli_stmt_bind_param($stmt_rooms, 'i', $city_id);
+        mysqli_stmt_execute($stmt_rooms);
+        $res_rooms = mysqli_stmt_get_result($stmt_rooms);
+        if ($res_rooms) {
+            while ($ra = mysqli_fetch_assoc($res_rooms)) {
+                $room_avail_map[(int)$ra['property_id']] = $ra;
+            }
+        }
+        mysqli_stmt_close($stmt_rooms);
+    }
 ?>
 
 <!DOCTYPE html>
@@ -76,12 +126,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Best PG's in <?= htmlspecialchars($city['name']); ?> | PG Life</title>
+    <meta name="description" content="Discover and book the best Paying Guest (PG) accommodations in <?= htmlspecialchars($city['name']); ?>. Filter by gender, rent, and amenities like WiFi, AC, laundry, and meals.">
+    <meta name="keywords" content="PG in <?= htmlspecialchars($city['name']); ?>, Paying Guest <?= htmlspecialchars($city['name']); ?>, hostel <?= htmlspecialchars($city['name']); ?>, student accommodation, premium co-living <?= htmlspecialchars($city['name']); ?>">
 
     <?php 
         include "includes/head_links.php";
     ?>
 
-    <link href="css/property_list.css" rel="stylesheet" />
+    <link href="css/property_list.css?v=2" rel="stylesheet" />
 </head>
 
 <body>
@@ -91,7 +143,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb py-2">
             <li class="breadcrumb-item">
-                <a href="home.php">Home</a>
+                <a href="/home">Home</a>
             </li>
             <li class="breadcrumb-item active" aria-current="page">
                 <?= htmlspecialchars($city_name); ?>
@@ -131,8 +183,8 @@
                 <div class="col-md-4 mb-3 mb-md-0">
                     <div class="d-flex align-items-center">
                         <span class="text-muted mr-3" style="font-size: 13px; white-space: nowrap;">Max Rent:</span>
-                        <input type="range" id="rent-range" class="custom-range" min="0" max="15000" step="500" value="15000" style="accent-color: #343a40;" />
-                        <span class="ml-3 font-weight-bold text-dark" id="rent-range-val" style="font-size: 14px; white-space: nowrap;">₹15,000</span>
+                        <input type="range" id="rent-range" class="custom-range" min="0" max="50000" step="1000" value="50000" style="accent-color: var(--primary-color);" />
+                        <span class="ml-3 font-weight-bold text-dark" id="rent-range-val" style="font-size: 14px; white-space: nowrap;">₹50,000</span>
                     </div>
                 </div>
                 <!-- Amenities dropdown filter -->
@@ -204,29 +256,23 @@
         <?php
             foreach ($properties as $property) {
                 $property_images = glob("img/properties/" . $property['id'] . "/*");
-                
-                // Fetch amenities for this property to set data-amenities attribute
-                $prop_id = $property['id'];
-                $sql_amenities = "SELECT a.name FROM amenities a
-                                  INNER JOIN properties_amenities pa ON a.id = pa.amenity_id
-                                  WHERE pa.property_id = ?";
-                $stmt_amenities = mysqli_prepare($conn, $sql_amenities);
-                $prop_amenities_list = [];
-                if ($stmt_amenities) {
-                    mysqli_stmt_bind_param($stmt_amenities, "i", $prop_id);
-                    mysqli_stmt_execute($stmt_amenities);
-                    $res_amenities = mysqli_stmt_get_result($stmt_amenities);
-                    if ($res_amenities) {
-                        while ($row_a = mysqli_fetch_assoc($res_amenities)) {
-                            $prop_amenities_list[] = $row_a['name'];
-                        }
+                if (!empty($property['primary_image']) && !empty($property_images)) {
+                    $primary_full_path = "img/properties/" . $property['id'] . "/" . $property['primary_image'];
+                    $key = array_search($primary_full_path, $property_images);
+                    if ($key !== false) {
+                        unset($property_images[$key]);
+                        array_unshift($property_images, $primary_full_path);
                     }
                 }
-                $prop_amenities_str = implode(",", $prop_amenities_list);
+                $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="#f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#94a3b8">No Image Available</text></svg>';
+                $image_src = !empty($property_images) ? $property_images[0] : 'data:image/svg+xml;base64,' . base64_encode($svg);
+                
+                // Fetch amenities from pre-grouped query results (avoids N+1 queries)
+                $prop_amenities_str = $property['amenities_list'] ?: '';
         ?>
             <div class="property-card property-id-<?= $property['id'] ?> row" data-rent="<?= $property['rent'] ?>" data-gender="<?= $property['gender'] ?>" data-amenities="<?= htmlspecialchars($prop_amenities_str) ?>">
                 <div class="image-container col-md-4">
-                    <img src="<?= $property_images[0] ?>" alt="<?= htmlspecialchars($property['name']) ?>" />
+                    <img src="<?= $image_src ?>" alt="<?= htmlspecialchars($property['name']) ?>" />
                 </div>
                 <div class="content-container col-md-8">
                     <div class="row no-gutters justify-content-between">
@@ -256,26 +302,21 @@
                         </div>
                         <div class="interested-container">
                             <?php
-                                $interested_users_count = 0;
-                                $is_interested = false;
-                                foreach ($interested_users_properties as $interested_user_property) {
-                                    if ($interested_user_property['property_id'] == $property['id']) {
-                                        $interested_users_count++;
+                                $prop_id = (int)$property['id'];
+                                $interested_data = isset($interested_map[$prop_id]) ? $interested_map[$prop_id] : ['count' => 0, 'user_ids' => []];
+                                $interested_users_count = $interested_data['count'];
+                                $is_interested = in_array($user_id, $interested_data['user_ids']);
 
-                                        if ($interested_user_property['user_id'] == $user_id) {
-                                            $is_interested = true;
-                                        }
+                                if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'owner') {
+                                    if ($is_interested) {
+                            ?>
+                                    <i class="is-interested-image property-id-<?= $property['id'] ?> fas fa-heart" property_id="<?= $property['id'] ?>" aria-label="Remove from wishlist" role="button" tabindex="0"></i>
+                            <?php
+                                    } else {
+                            ?>
+                                    <i class="is-interested-image property-id-<?= $property['id'] ?> far fa-heart" property_id="<?= $property['id'] ?>" aria-label="Add to wishlist" role="button" tabindex="0"></i>
+                            <?php
                                     }
-                                }
-
-                                if ($is_interested) {
-                            ?>
-                                <i class="is-interested-image property-id-<?= $property['id'] ?> fas fa-heart" property_id="<?= $property['id'] ?>"></i>
-                            <?php
-                                } else {
-                            ?>
-                                <i class="is-interested-image property-id-<?= $property['id'] ?> far fa-heart" property_id="<?= $property['id'] ?>"></i>
-                            <?php
                                 }
                             ?>
                             <div class="interested-text">
@@ -308,9 +349,21 @@
                         <div class="rent-container col-6">
                             <div class="rent">₹ <?= number_format($property['rent']) ?>/-</div>
                             <div class="rent-unit">per month</div>
+                            <?php
+                                $pid_l = (int)$property['id'];
+                                if (isset($room_avail_map[$pid_l])) {
+                                    $ra = $room_avail_map[$pid_l];
+                                    $avail_l = max(0, (int)$ra['available_beds']);
+                                    $avail_class = $avail_l === 0 ? 'badge-danger' : ($avail_l <= 2 ? 'badge-warning' : 'badge-success');
+                                    $avail_text  = $avail_l === 0 ? 'Full' : $avail_l . ' beds free';
+                            ?>
+                            <span class="badge <?= $avail_class ?> mt-1 d-inline-block" style="font-size: 10px; border-radius: 6px; padding: 2px 6px;">
+                                <i class="fas fa-bed mr-1"></i><?= $avail_text ?>
+                            </span>
+                            <?php } ?>
                         </div>
                         <div class="button-container col-6">
-                            <a href="property_detail.php?property_id=<?= $property['id'] ?>" class="btn btn-primary">View</a>
+                            <a href="/pg/<?= $property['id'] ?>" class="btn btn-primary">View</a>
                         </div>
                     </div>
                 </div>

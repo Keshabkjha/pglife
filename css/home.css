@@ -94,5 +94,5 @@
 }
 
 .city-container a:hover .city-label {
-    color: #007bff;
+    color: var(--primary-color);
 }

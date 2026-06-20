@@ -1,7 +1,7 @@
 /* ==================================================
    PGLife - common.js
-   Handles: Auth forms (signup/login/otp), 
-            Page transitions, 
+   Handles: Auth forms (signup/login/otp),
+            Page transitions (no-blink),
             Toast notifications
    ================================================== */
 
@@ -9,11 +9,11 @@
 function showToast(message, type) {
     type = type || 'info'; // 'success', 'error', 'info', 'warning'
     var toastId = 'pglife-toast-' + Date.now();
-    
+
     var colorMap = {
         success: { bg: '#28a745', icon: 'fa-check-circle' },
         error:   { bg: '#dc3545', icon: 'fa-times-circle' },
-        warning: { bg: '#ffc107', icon: 'fa-exclamation-triangle' },
+        warning: { bg: '#e07b00', icon: 'fa-exclamation-triangle' },
         info:    { bg: '#17a2b8', icon: 'fa-info-circle' }
     };
     var style = colorMap[type] || colorMap['info'];
@@ -40,7 +40,7 @@ function showToast(message, type) {
 
     container.appendChild(toast);
 
-    // Auto-dismiss after 4 seconds
+    // Auto-dismiss after 4.5 seconds
     setTimeout(function() {
         if (document.getElementById(toastId)) {
             document.getElementById(toastId).style.animation = 'pglife-slide-out 0.35s ease forwards';
@@ -49,24 +49,50 @@ function showToast(message, type) {
     }, 4500);
 }
 
-// ---- Smooth Page Navigate ----
+// ---- Smooth Page Navigate (zero-blink) ----
+// The page starts invisible (opacity:0 on html element, set immediately by inline style).
+// We animate body out, navigate, and the new page fades in via CSS animation.
 function navigateTo(url) {
-    document.body.style.transition = 'opacity 0.28s ease, transform 0.28s ease';
-    document.body.style.opacity = '0';
-    document.body.style.transform = 'translateY(-6px)';
-    setTimeout(function() { window.location.href = url; }, 300);
+    // Prevent double-navigation
+    if (window._navigating) return;
+    window._navigating = true;
+
+    var el = document.body;
+    el.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-8px)';
+    el.style.pointerEvents = 'none';
+
+    setTimeout(function() {
+        window.location.href = url;
+    }, 270);
 }
 
-// Intercept regular anchor clicks for smooth navigation (except modal-openers, targets, API links, anchors)
+// Intercept anchor clicks for smooth navigation
+// (skip: modal-openers, external links, anchors, API, download, target=_blank)
 document.addEventListener('click', function(e) {
     var link = e.target.closest('a[href]');
     if (!link) return;
     var href = link.getAttribute('href');
-    // Skip: empty href, anchors, external, modals, javascript:, download
-    if (!href || href === '#' || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('http') || href.startsWith('//') || link.hasAttribute('data-toggle') || link.hasAttribute('data-dismiss') || link.hasAttribute('download') || link.hasAttribute('target')) return;
+    if (!href || href === '#' || href.startsWith('#') || href.startsWith('javascript:') ||
+        href.startsWith('http') || href.startsWith('//') || href.startsWith('mailto:') ||
+        link.hasAttribute('data-toggle') || link.hasAttribute('data-dismiss') ||
+        link.hasAttribute('download') || link.hasAttribute('target')) return;
     e.preventDefault();
     navigateTo(href);
 }, false);
+
+// Intercept browser Back/Forward so fade-in runs
+window.addEventListener('pageshow', function(e) {
+    // Restore body visibility if page was restored from bfcache
+    if (e.persisted) {
+        document.body.style.transition = 'none';
+        document.body.style.opacity = '1';
+        document.body.style.transform = 'none';
+        document.body.style.pointerEvents = '';
+        window._navigating = false;
+    }
+});
 
 // ---- Load Event ----
 window.addEventListener("load", function () {
@@ -120,6 +146,94 @@ window.addEventListener("load", function () {
             event.preventDefault();
         });
     }
+
+    // --- Forgot Password Form ---
+    var forgot_form = document.getElementById("forgot-form");
+    if (forgot_form) {
+        forgot_form.addEventListener("submit", function (event) {
+            var XHR = new XMLHttpRequest();
+            var form_data = new FormData(forgot_form);
+
+            XHR.addEventListener("load", function(e) {
+                document.getElementById("loading").style.display = 'none';
+                try {
+                    var response = JSON.parse(e.target.responseText);
+                    if (response.success) {
+                        showToast(response.message || 'OTP sent! Please check your email.', 'success');
+                        
+                        // Transition to Reset Form
+                        var ff = document.getElementById("forgot-form");
+                        var rf = document.getElementById("reset-form");
+                        ff.style.transition = 'opacity 0.3s ease';
+                        ff.style.opacity = '0';
+                        setTimeout(function() {
+                            ff.style.display = "none";
+                            rf.style.opacity = '0';
+                            rf.style.display = "block";
+                            setTimeout(function() {
+                                rf.style.transition = 'opacity 0.3s ease';
+                                rf.style.opacity = '1';
+                            }, 50);
+                        }, 300);
+                    } else {
+                        showToast(response.message || 'Failed to send recovery OTP.', 'error');
+                    }
+                } catch(err) {
+                    showToast('An error occurred during password reset request.', 'error');
+                }
+            });
+            XHR.addEventListener("error", on_error);
+
+            XHR.open("POST", "api/forgot_password.php");
+            XHR.send(form_data);
+
+            document.getElementById("loading").style.display = 'block';
+            event.preventDefault();
+        });
+    }
+
+    // --- Reset Password Form ---
+    var reset_form = document.getElementById("reset-form");
+    if (reset_form) {
+        reset_form.addEventListener("submit", function (event) {
+            var XHR = new XMLHttpRequest();
+            var form_data = new FormData(reset_form);
+
+            XHR.addEventListener("load", function(e) {
+                document.getElementById("loading").style.display = 'none';
+                try {
+                    var response = JSON.parse(e.target.responseText);
+                    if (response.success) {
+                        showToast(response.message || 'Password reset successfully!', 'success');
+                        setTimeout(function() {
+                            // Reset modal states and switch back to login modal
+                            window.$("#forgot-password-modal").modal("hide");
+                            
+                            // Reset forms inside modal
+                            document.getElementById("forgot-form").reset();
+                            document.getElementById("forgot-form").style.display = "block";
+                            document.getElementById("forgot-form").style.opacity = "1";
+                            document.getElementById("reset-form").reset();
+                            document.getElementById("reset-form").style.display = "none";
+
+                            window.$("#login-modal").modal("show");
+                        }, 1200);
+                    } else {
+                        showToast(response.message || 'Failed to reset password.', 'error');
+                    }
+                } catch(err) {
+                    showToast('An error occurred during password verification.', 'error');
+                }
+            });
+            XHR.addEventListener("error", on_error);
+
+            XHR.open("POST", "api/reset_password.php");
+            XHR.send(form_data);
+
+            document.getElementById("loading").style.display = 'block';
+            event.preventDefault();
+        });
+    }
 });
 
 // ---- Success/Error Handlers ----
@@ -147,7 +261,7 @@ var signup_success = function (event) {
             }, 300);
         } else {
             showToast(response.message || 'Account created successfully!', 'success');
-            setTimeout(function() { navigateTo("home.php"); }, 1000);
+            setTimeout(function() { navigateTo("/home"); }, 1000);
         }
     } else {
         showToast(response.message || 'Signup failed. Please try again.', 'error');
@@ -159,7 +273,7 @@ var otp_success = function (event) {
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
         showToast(response.message || 'Account verified! Welcome to PGLife!', 'success');
-        setTimeout(function() { navigateTo("dashboard.php"); }, 1200);
+        setTimeout(function() { navigateTo("/dashboard"); }, 1200);
     } else {
         showToast(response.message || 'Invalid OTP. Please try again.', 'error');
     }
@@ -170,7 +284,13 @@ var login_success = function (event) {
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
         showToast('Welcome back! Logging you in...', 'success');
-        setTimeout(function() { location.reload(); }, 800);
+        setTimeout(function() {
+            var el = document.body;
+            el.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-8px)';
+            setTimeout(function() { location.reload(); }, 250);
+        }, 550);
     } else {
         showToast(response.message || 'Login failed. Please check your credentials.', 'error');
     }

@@ -54,9 +54,9 @@
 }
 
 .star-container i {
-    color: #EA322E;
-    font-size: 10px;
-    margin-right: 6px;
+    color: var(--warning-color);
+    font-size: 12px;
+    margin-right: 4px;
 }
 
 .interested-container {
@@ -64,13 +64,20 @@
 }
 
 .interested-container i {
-    color: #EA322E;
+    color: var(--accent-color);
     font-size: 20px;
     cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.interested-container i:hover {
+    transform: scale(1.2);
 }
 
 .interested-text {
-    font-size: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748B;
 }
 
 .detail-container {
@@ -110,8 +117,8 @@
 
 .button-container .btn {
     font-size: 14px;
-    border-radius: 0px;
-    width: 140px;
+    border-radius: 6px;
+    width: 110px;
     float: right;
 }
 
@@ -155,4 +162,40 @@
 
 #filter-modal .modal-footer button {
     width: 120px;
+}
+
+@media (max-width: 576px) {
+    .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+    .filter-bar > div {
+        margin-bottom: 0;
+        padding: 4px 8px;
+    }
+    .property-card {
+        padding: 12px 8px;
+    }
+    .property-name {
+        font-size: 16px;
+    }
+    .property-address {
+        font-size: 12px;
+    }
+    .rent {
+        font-size: 16px;
+    }
+    .button-container .btn {
+        font-size: 12px;
+        width: 90px;
+        padding: 4px 8px;
+    }
+    .no-property-container {
+        margin: 48px auto 72px;
+    }
+    .no-property-container p {
+        font-size: 18px;
+    }
 }

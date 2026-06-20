@@ -12,10 +12,11 @@ window.addEventListener("load", function () {
             XHR.addEventListener("error", on_error);
 
             // Set up request
-            XHR.open("GET", "api/toggle_interested.php?property_id=" + property_id + "&csrf_token=" + window.csrf_token);
+            XHR.open("POST", "api/toggle_interested.php");
+            XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
             // Initiate the request
-            XHR.send();
+            XHR.send("property_id=" + encodeURIComponent(property_id) + "&csrf_token=" + encodeURIComponent(window.csrf_token));
 
             document.getElementById("loading").style.display = 'block';
             event.preventDefault();
@@ -42,7 +43,7 @@ window.addEventListener("load", function () {
     // Apply Filters Function
     function filterProperties() {
         var keyword = keyword_input ? keyword_input.value.toLowerCase().trim() : "";
-        var max_rent = rent_slider ? parseInt(rent_slider.value) : 15000;
+        var max_rent = rent_slider ? parseInt(rent_slider.value) : 50000;
         
         var checked_amenities = [];
         var chks = document.querySelectorAll(".amenity-filter-chk:checked");

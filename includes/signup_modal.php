@@ -46,7 +46,7 @@
                                 <i class="fas fa-lock"></i>
                             </span>
                         </div>
-                        <input type="password" class="form-control" name="password" placeholder="Password" minlength="6" required>
+                        <input type="password" class="form-control" name="password" autocomplete="new-password" placeholder="Password" minlength="8" required>
                     </div>
 
                     <div class="input-group form-group">
@@ -60,10 +60,10 @@
 
                     <div class="form-group">
                         <span>I'm a</span>
-                        <input type="radio" class="ml-3" id="gender-male" name="gender" value="male" required /> Male
-                        <label for="gender-male"></label>
-                        <input type="radio" class="ml-3" id="gender-female" name="gender" value="female" required /> Female
-                        <label for="gender-female"></label>
+                        <input type="radio" class="ml-3" id="gender-male" name="gender" value="male" required />
+                        <label for="gender-male" class="mb-0">Male</label>
+                        <input type="radio" class="ml-3" id="gender-female" name="gender" value="female" required />
+                        <label for="gender-female" class="mb-0">Female</label>
                     </div>
                     <div class="form-group border-top pt-3">
                         <span class="font-weight-bold">Profile Type:</span>
@@ -80,6 +80,7 @@
 
                 <!-- OTP Verification Form -->
                 <form id="otp-form" class="form" role="form" style="display: none;">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>" />
                     <div class="text-center mb-3">
                         <i class="fas fa-envelope-open-text text-primary" style="font-size: 36px;"></i>
                     </div>
