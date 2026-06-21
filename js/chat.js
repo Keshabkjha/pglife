@@ -119,7 +119,7 @@ $(document).ready(function () {
         $('#chat-widget-messages').html('<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2"></i>Loading history...</div>');
 
         // Show chat box widget & ensure not minimized
-        $('#chat-box-widget').removeClass('minimized').fadeIn(300);
+        $('#chat-box-widget').removeClass('minimized').addClass('chat-open');
         $('#chat-widget-minimize').html('<i class="fas fa-minus"></i>');
 
         // Load chips
@@ -135,7 +135,7 @@ $(document).ready(function () {
 
     // Close Chat Box Function
     function closeChatBox() {
-        $('#chat-box-widget').fadeOut(300);
+        $('#chat-box-widget').removeClass('chat-open');
         if (chatInterval) {
             clearInterval(chatInterval);
             chatInterval = null;

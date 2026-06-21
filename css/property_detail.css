@@ -428,4 +428,127 @@
 
 /* ── Owner: Room Manager in Dashboard ─────────────────────── */
 .room-manager-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
-.room-manager-row select, .room-manager-row input[type=text], .room-manager-row input[type=number] { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; min-width: 100px; }
+.room-manager-row select, .room-manager-row input[type=text], .room-manager-row input[type=number] { padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; min-width: 100px; }
+
+/* ==========================================================
+   DARK MODE – Property Detail Page
+   ========================================================== */
+
+/* ── Property backgrounds ── */
+body.dark-mode .property-amenities,
+body.dark-mode .property-rating {
+    background-color: #0F172A;
+    border-color: #334155;
+}
+
+/* ── Review section ── */
+body.dark-mode .add-review-container {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #CBD5E1;
+}
+
+body.dark-mode .add-review-container h4 {
+    color: #F1F5F9;
+}
+
+body.dark-mode .review-block {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .review-details-container strong {
+    color: #F1F5F9;
+}
+
+body.dark-mode .review-details-container p {
+    color: #94A3B8 !important;
+}
+
+/* ── Owner info card ── */
+body.dark-mode .owner-info-card {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #CBD5E1;
+}
+
+body.dark-mode .owner-info-card h5,
+body.dark-mode .owner-info-card h6 {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .owner-info-card .owner-avatar {
+    background: #0F172A !important;
+    color: #818CF8 !important;
+}
+
+/* ── Room type cards ── */
+body.dark-mode .room-type-card {
+    background: #1E293B !important;
+    border-color: #334155 !important;
+    color: #CBD5E1;
+}
+
+body.dark-mode .room-type-card.full {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+body.dark-mode .room-type-card.limited {
+    background: rgba(251, 191, 36, 0.08) !important;
+    border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
+body.dark-mode .room-type-card.available {
+    background: rgba(52, 211, 153, 0.08) !important;
+    border-color: rgba(52, 211, 153, 0.3) !important;
+}
+
+body.dark-mode .room-type-label {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .room-occupancy-bar {
+    background: #334155;
+}
+
+body.dark-mode .room-occupancy-text {
+    color: #64748B;
+}
+
+body.dark-mode .room-amenity-chip {
+    background: #334155;
+    color: #94A3B8;
+    border-color: #475569;
+}
+
+/* ── Testimonial block ── */
+body.dark-mode .testimonial-block {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .testimonial-text {
+    color: #94A3B8;
+}
+
+body.dark-mode .testimonial-name {
+    color: #CBD5E1;
+}
+
+/* ── Property address / text colors ── */
+body.dark-mode .property-address,
+body.dark-mode .rent-unit {
+    color: #64748B !important;
+}
+
+body.dark-mode .property-about p {
+    color: #94A3B8;
+}
+
+/* ── Breadcrumb on property detail ── */
+body.dark-mode .breadcrumb-item a {
+    color: #818CF8;
+}
+

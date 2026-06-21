@@ -328,7 +328,7 @@
 
         <!-- KYC Status Panel -->
         <hr class="my-4" />
-        <div class="kyc-status-panel p-4 rounded bg-white border" style="border-radius: 12px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+        <div class="kyc-status-panel p-4 rounded border" style="border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
             <div class="row align-items-center">
                 <div class="col-md-8">
                     <h5 class="mb-1 font-weight-bold text-dark"><i class="fas fa-id-card mr-2 text-primary"></i>Aadhaar / KYC Verification</h5>

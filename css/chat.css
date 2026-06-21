@@ -15,14 +15,28 @@
     border-radius: 16px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid #e2e8f0;
-    display: none; /* Controlled by JS */
+    /* Hidden state: slid below viewport + invisible */
+    display: flex;             /* always flex — visibility controlled by transform */
     flex-direction: column;
     overflow: hidden;
     font-family: 'Inter', sans-serif;
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
-                height 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    /* Slide-up animation */
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;      /* not interactive when hidden */
+    transition: transform 0.38s cubic-bezier(0.34, 1.3, 0.64, 1),
+                opacity   0.3s ease;
+    will-change: transform, opacity;
 }
 
+/* Open state — slides up into view */
+#chat-box-widget.chat-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Minimized — collapse to just the header */
 #chat-box-widget.minimized {
     height: 60px;
 }
@@ -36,6 +50,8 @@
         right: 0;
         left: 0;
         border-radius: 20px 20px 0 0;
+        /* slide up from fully below on mobile */
+        transform: translateY(100%);
     }
     #chat-box-widget.minimized {
         height: 56px;

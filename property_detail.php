@@ -453,7 +453,7 @@
         <?php } ?>
 
         <!-- Property Management / Owner Info -->
-        <div class="owner-info-card mt-5 p-4 rounded bg-white border" style="border-radius: 12px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); max-width: 500px;">
+        <div class="owner-info-card mt-5 p-4 rounded border" style="border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); max-width: 500px;">
             <h5 class="mb-3 font-weight-bold text-dark"><i class="fas fa-user-tie mr-2 text-primary"></i>Property Manager / Owner</h5>
             <?php if ($property['owner_name']) { ?>
             <div class="d-flex align-items-center">
@@ -658,7 +658,7 @@
         </div>
 
         <?php if ($user_id) { ?>
-            <div class="add-review-container mt-5 p-4 border rounded bg-white shadow-sm">
+            <div class="add-review-container mt-5 p-4 border rounded shadow-sm">
                 <h4 class="mb-3 font-weight-bold">Submit a Review</h4>
                 <form id="add-review-form">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>" />
