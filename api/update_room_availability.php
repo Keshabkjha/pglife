@@ -1,9 +1,5 @@
 <?php
-// api/update_room_availability.php
-// Allows property owners to add, edit, or delete room types
-// Seekers can express interest in a specific room type
-
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 require_once '../includes/database_connect.php';
 
 if (!isset($_SESSION['user_id'])) {

@@ -3,7 +3,7 @@
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-    if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
+    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
         echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
         return;
     }
@@ -26,6 +26,40 @@
 
     if ($sender_id === $receiver_id) {
         echo json_encode(array("success" => false, "message" => "You cannot send a message to yourself."));
+        return;
+    }
+
+    // Verify the receiver has a relationship to this property (owner, booker, or interested)
+    $sql_recv_check = "SELECT owner_id FROM properties WHERE id = ?";
+    $stmt_recv = mysqli_prepare($conn, $sql_recv_check);
+    $receiver_authorized = false;
+    if ($stmt_recv) {
+        mysqli_stmt_bind_param($stmt_recv, "i", $property_id);
+        mysqli_stmt_execute($stmt_recv);
+        $res_recv = mysqli_stmt_get_result($stmt_recv);
+        if ($row_recv = mysqli_fetch_assoc($res_recv)) {
+            if ((int)$row_recv['owner_id'] === $receiver_id) {
+                $receiver_authorized = true;
+            }
+        }
+        mysqli_stmt_close($stmt_recv);
+    }
+    if (!$receiver_authorized) {
+        $sql_rel = "SELECT id FROM bookings WHERE user_id = ? AND property_id = ? 
+                    UNION SELECT id FROM interested_users_properties WHERE user_id = ? AND property_id = ?";
+        $stmt_rel = mysqli_prepare($conn, $sql_rel);
+        if ($stmt_rel) {
+            mysqli_stmt_bind_param($stmt_rel, "iiii", $receiver_id, $property_id, $receiver_id, $property_id);
+            mysqli_stmt_execute($stmt_rel);
+            mysqli_stmt_store_result($stmt_rel);
+            if (mysqli_stmt_num_rows($stmt_rel) > 0) {
+                $receiver_authorized = true;
+            }
+            mysqli_stmt_close($stmt_rel);
+        }
+    }
+    if (!$receiver_authorized) {
+        echo json_encode(array("success" => false, "message" => "The recipient is not associated with this property."));
         return;
     }
 

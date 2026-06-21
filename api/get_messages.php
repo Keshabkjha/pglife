@@ -16,6 +16,41 @@
         return;
     }
 
+    // Authorization: verify user has a relationship to this property
+    $sql_auth = "SELECT p.owner_id FROM properties p WHERE p.id = ?";
+    $stmt_auth = mysqli_prepare($conn, $sql_auth);
+    $authorized = false;
+    if ($stmt_auth) {
+        mysqli_stmt_bind_param($stmt_auth, "i", $property_id);
+        mysqli_stmt_execute($stmt_auth);
+        $res_auth = mysqli_stmt_get_result($stmt_auth);
+        if ($row_auth = mysqli_fetch_assoc($res_auth)) {
+            if ((int)$row_auth['owner_id'] === $user_id) {
+                $authorized = true;
+            }
+        }
+        mysqli_stmt_close($stmt_auth);
+    }
+    if (!$authorized) {
+        // Check if user has a booking or interest in this property
+        $sql_rel = "SELECT id FROM bookings WHERE user_id = ? AND property_id = ? 
+                    UNION SELECT id FROM interested_users_properties WHERE user_id = ? AND property_id = ?";
+        $stmt_rel = mysqli_prepare($conn, $sql_rel);
+        if ($stmt_rel) {
+            mysqli_stmt_bind_param($stmt_rel, "iiii", $user_id, $property_id, $user_id, $property_id);
+            mysqli_stmt_execute($stmt_rel);
+            mysqli_stmt_store_result($stmt_rel);
+            if (mysqli_stmt_num_rows($stmt_rel) > 0) {
+                $authorized = true;
+            }
+            mysqli_stmt_close($stmt_rel);
+        }
+    }
+    if (!$authorized) {
+        echo json_encode(array("success" => false, "message" => "Access denied."));
+        return;
+    }
+
     // Mark incoming messages as read
     $sql_read = "UPDATE messages SET is_read = 1 
                  WHERE property_id = ? AND sender_id = ? AND receiver_id = ? AND is_read = 0";

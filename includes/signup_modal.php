@@ -76,6 +76,13 @@
                     <div class="form-group">
                         <button type="submit" class="btn btn-block btn-primary">Send Verification OTP</button>
                     </div>
+
+                    <p style="font-size: 12px; color: #94A3B8; text-align: center; margin-top: 8px; line-height: 1.5;">
+                        By signing up, you agree to our
+                        <a href="/terms" target="_blank" style="color: var(--primary-color); text-decoration: none;">Terms of Service</a>
+                        and
+                        <a href="/privacy" target="_blank" style="color: var(--primary-color); text-decoration: none;">Privacy Policy</a>.
+                    </p>
                 </form>
 
                 <!-- OTP Verification Form -->

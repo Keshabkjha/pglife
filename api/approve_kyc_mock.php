@@ -3,13 +3,19 @@
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-    if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
+    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
         echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
         return;
     }
 
     if (!isset($_SESSION['user_id'])) {
         echo json_encode(array("success" => false, "message" => "Please login to perform this action."));
+        return;
+    }
+
+    // Only property owners can simulate KYC approval (admin simulation)
+    if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'owner') {
+        echo json_encode(array("success" => false, "message" => "Unauthorized. Only property owners can simulate admin verification."));
         return;
     }
 

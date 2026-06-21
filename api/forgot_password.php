@@ -2,10 +2,19 @@
     require("../includes/database_connect.php");
     header('Content-Type: application/json; charset=utf-8');
     require("../includes/mail_helper.php");
+    require_once("../includes/rate_limiter.php");
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-    if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
+    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
         echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
+        return;
+    }
+
+    // Rate limit: max 3 forgot-password OTP requests per IP per 15 minutes
+    $client_ip = get_client_ip();
+    $rate = check_rate_limit($conn, 'forgot_otp', $client_ip, 3, 900);
+    if (!$rate['allowed']) {
+        echo json_encode(array("success" => false, "message" => "Too many password reset requests. Please try again in " . format_retry_after($rate['retry_after']) . "."));
         return;
     }
 

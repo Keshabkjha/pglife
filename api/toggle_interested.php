@@ -2,7 +2,7 @@
     require "../includes/database_connect.php";
     header('Content-Type: application/json; charset=utf-8');
     if(!isset($_SESSION['user_id'])) {
-        echo json_encode(array("success" => false, "is_logged_in" => false));
+        echo json_encode(array("success" => false, "is_logged_in" => false, "message" => "Please login to continue."));
         return;
     }
 
@@ -12,7 +12,7 @@
     }
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-    if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
+    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
         echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
         return;
     }

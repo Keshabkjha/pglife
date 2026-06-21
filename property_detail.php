@@ -14,7 +14,7 @@
                      u.full_name AS owner_name, u.is_verified AS owner_verified, u.phone AS owner_phone
                 FROM properties p
                 INNER JOIN cities c ON p.city_id = c.id
-                INNER JOIN users u ON p.owner_id = u.id
+                LEFT JOIN users u ON p.owner_id = u.id
                 WHERE p.id = ?";
     $stmt_1 = mysqli_prepare($conn, $sql_1);
     if (!$stmt_1) {
@@ -165,7 +165,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <link href="css/property_detail.css?v=2" rel="stylesheet" />
-    <link href="css/chat.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -215,7 +214,7 @@
             foreach($property_images as $index => $property_image) {
             ?>
             <div class="carousel-item <?= $index == 0? "active":"" ?>">
-                <img class="d-block w-100" src="<?= $property_image ?>" alt="Slide <?= $index + 1 ?>">
+                <img class="d-block w-100" src="<?= htmlspecialchars($property_image) ?>" alt="Slide <?= $index + 1 ?>" <?= $index > 0 ? 'loading="lazy"' : '' ?>>
             </div>
             <?php
                 }
@@ -456,6 +455,7 @@
         <!-- Property Management / Owner Info -->
         <div class="owner-info-card mt-5 p-4 rounded bg-white border" style="border-radius: 12px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); max-width: 500px;">
             <h5 class="mb-3 font-weight-bold text-dark"><i class="fas fa-user-tie mr-2 text-primary"></i>Property Manager / Owner</h5>
+            <?php if ($property['owner_name']) { ?>
             <div class="d-flex align-items-center">
                 <div class="owner-avatar mr-3" style="width: 50px; height: 50px; border-radius: 50%; background: #e3f2fd; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #1e3c72; font-weight: bold;">
                     <?= strtoupper(substr($property['owner_name'], 0, 1)) ?>
@@ -483,6 +483,12 @@
                         <i class="fas fa-comments mr-1"></i>Chat with Owner
                     </button>
                 </div>
+            <?php } ?>
+            <?php } else { ?>
+            <div class="text-center py-2">
+                <i class="fas fa-building text-muted mb-2" style="font-size: 32px;"></i>
+                <p class="text-muted mb-0" style="font-size: 13px;">This property is currently unlisted. Owner information is not available.</p>
+            </div>
             <?php } ?>
         </div>
     </div>
@@ -626,7 +632,7 @@
                                 $review_img = 'img/Female_icon.png';
                             }
                         ?>
-                        <img src="<?= $review_img ?>" class="rounded-circle img-thumbnail" style="width: 45px; height: 45px; object-fit: cover;" alt="User Avatar" />
+                        <img src="<?= htmlspecialchars($review_img) ?>" class="rounded-circle img-thumbnail" style="width: 45px; height: 45px; object-fit: cover;" alt="User Avatar" />
                     </div>
                     <div class="review-details-container flex-grow-1">
                         <div class="d-flex justify-content-between mb-2">
@@ -695,7 +701,7 @@
         ?>
         <div class="testimonial-block">
             <div class="testimonial-image-container">
-                <img class="testimonial-img" src="<?= $avatar ?>" alt="Testimonial user">
+                <img class="testimonial-img" src="<?= htmlspecialchars($avatar) ?>" alt="Testimonial user">
             </div>
             <div class="testimonial-text">
                 <i class="fa fa-quote-left" aria-hidden="true"></i>

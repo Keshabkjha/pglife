@@ -10,9 +10,14 @@
     width: 40px;
     height: 40px;
     border-radius: 40px;
-    border: 1px solid #646870;
+    border: 1px solid var(--border-color);
     padding: 6px;
     margin-right: 8px;
+    transition: border-color 0.2s ease;
+}
+
+.filter-bar > div:hover img {
+    border-color: var(--primary-color);
 }
 
 @media (max-width: 768px) {
@@ -22,81 +27,17 @@
     }
 }
 
-/*   Property Card   */
-.property-card {
-    background-color: #ffffff;
-    border-radius: 8px;
-    padding: 15px 0px;
-    margin: 0px auto 20px;
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.1), 0 2px 10px 0 rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.property-card:focus,
-.property-card:hover {
-    box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.15), 0 6px 6px 0 rgba(0, 0, 0, 0.1);
-    transform: translateY(-5px);
-}
-
-.image-container {
-    text-align: center;
-}
-
-@media (max-width: 768px) {
-    .image-container {
-        padding-bottom: 12px;
-    }
-}
-
-.image-container img {
-    width: 100%;
-    max-width: 300px;
-}
-
-.star-container i {
-    color: var(--warning-color);
-    font-size: 12px;
-    margin-right: 4px;
-}
-
-.interested-container {
-    text-align: center;
-}
-
-.interested-container i {
-    color: var(--accent-color);
-    font-size: 20px;
-    cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.interested-container i:hover {
-    transform: scale(1.2);
-}
-
-.interested-text {
-    font-size: 11px;
-    font-weight: 500;
-    color: #64748B;
-}
-
-.detail-container {
-    padding-bottom: 10px;
-}
-
+/* Property list-specific overrides on top of common.css shared styles */
 .property-name {
     font-size: 18px;
-    font-weight: 600;
 }
 
 .property-address {
-    color: #6f6f6f;
     font-size: 13px;
-    padding-bottom: 5px;
 }
 
-.property-gender img {
-    width: 40px;
+.button-container .btn {
+    border-radius: 4px;
 }
 
 .rent-container {

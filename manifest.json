@@ -1,0 +1,19 @@
+{
+    "name": "PG Life - Find Your Perfect PG",
+    "short_name": "PG Life",
+    "description": "Discover and book Paying Guest accommodations across major Indian cities.",
+    "start_url": "/home",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#F8FAFC",
+    "theme_color": "#4F46E5",
+    "categories": ["lifestyle", "utilities"],
+    "lang": "en-IN",
+    "icons": [
+        {
+            "src": "favicon.ico",
+            "sizes": "64x64",
+            "type": "image/x-icon"
+        }
+    ]
+}

@@ -113,7 +113,14 @@
                 <a href="/properties/Gurgaon">PG in Gurgaon</a>
             </div>
         </div>
-        <div class="footer-copyright">© <?= date('Y') ?> Copyright Keshabkjha. All rights reserved.</div>
+        <div class="footer-legal">
+            <a href="/privacy">Privacy Policy</a>
+            <span class="footer-legal-sep">&middot;</span>
+            <a href="/terms">Terms of Service</a>
+            <span class="footer-legal-sep">&middot;</span>
+            <a href="/disclaimer">Disclaimer</a>
+        </div>
+        <div class="footer-copyright">&copy; <?= date('Y') ?> Copyright Keshabkjha. All rights reserved.</div>
     </div>
 </div>
 

@@ -4,7 +4,7 @@
 
     // 1. Verify CSRF Token
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-    if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
+    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
         echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
         return;
     }

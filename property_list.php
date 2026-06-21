@@ -34,18 +34,39 @@
 
     $city_id = $city['id'];
 
+    // Pagination
+    $per_page = 20;
+    $current_page = max(1, isset($_GET['page']) ? (int)$_GET['page'] : 1);
+    $offset = ($current_page - 1) * $per_page;
+
+    // Get total property count for pagination
+    $sql_count = "SELECT COUNT(*) AS total FROM properties WHERE city_id = ?";
+    $stmt_count = mysqli_prepare($conn, $sql_count);
+    $total_properties = 0;
+    if ($stmt_count) {
+        mysqli_stmt_bind_param($stmt_count, "i", $city_id);
+        mysqli_stmt_execute($stmt_count);
+        $res_count = mysqli_stmt_get_result($stmt_count);
+        if ($row_count = mysqli_fetch_assoc($res_count)) {
+            $total_properties = (int)$row_count['total'];
+        }
+        mysqli_stmt_close($stmt_count);
+    }
+    $total_pages = max(1, (int)ceil($total_properties / $per_page));
+
     $sql_2 = "SELECT p.*, GROUP_CONCAT(a.name) AS amenities_list 
               FROM properties p 
               LEFT JOIN properties_amenities pa ON p.id = pa.property_id 
               LEFT JOIN amenities a ON pa.amenity_id = a.id 
               WHERE p.city_id = ? 
-              GROUP BY p.id";
+              GROUP BY p.id 
+              LIMIT ? OFFSET ?";
     $stmt_2 = mysqli_prepare($conn, $sql_2);
     if (!$stmt_2) {
         header("Location: /home");
         exit;
     }
-    mysqli_stmt_bind_param($stmt_2, "i", $city_id);
+    mysqli_stmt_bind_param($stmt_2, "iii", $city_id, $per_page, $offset);
     mysqli_stmt_execute($stmt_2);
     $result_2 = mysqli_stmt_get_result($stmt_2);
     if (!$result_2) {
@@ -272,7 +293,7 @@
         ?>
             <div class="property-card property-id-<?= $property['id'] ?> row" data-rent="<?= $property['rent'] ?>" data-gender="<?= $property['gender'] ?>" data-amenities="<?= htmlspecialchars($prop_amenities_str) ?>">
                 <div class="image-container col-md-4">
-                    <img src="<?= $image_src ?>" alt="<?= htmlspecialchars($property['name']) ?>" />
+                    <img src="<?= htmlspecialchars($image_src) ?>" alt="<?= htmlspecialchars($property['name']) ?>" loading="lazy" />
                 </div>
                 <div class="content-container col-md-8">
                     <div class="row no-gutters justify-content-between">
@@ -381,6 +402,37 @@
         <?php
             }
         ?>
+
+        <?php if ($total_pages > 1) { ?>
+        <nav aria-label="Property listing pages" class="mt-4 mb-3">
+            <ul class="pagination justify-content-center">
+                <?php if ($current_page > 1) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="/properties/<?= htmlspecialchars($city_name) ?>?page=<?= $current_page - 1 ?>">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <?php } ?>
+
+                <?php for ($p = 1; $p <= $total_pages; $p++) { ?>
+                <li class="page-item <?= $p === $current_page ? 'active' : '' ?>">
+                    <a class="page-link" href="/properties/<?= htmlspecialchars($city_name) ?>?page=<?= $p ?>"><?= $p ?></a>
+                </li>
+                <?php } ?>
+
+                <?php if ($current_page < $total_pages) { ?>
+                <li class="page-item">
+                    <a class="page-link" href="/properties/<?= htmlspecialchars($city_name) ?>?page=<?= $current_page + 1 ?>">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                <?php } ?>
+            </ul>
+            <p class="text-center text-muted" style="font-size: 12px;">
+                Showing <?= $offset + 1 ?>–<?= min($offset + $per_page, $total_properties) ?> of <?= $total_properties ?> properties
+            </p>
+        </nav>
+        <?php } ?>
     </div>
 
     <div class="modal fade" id="filter-modal" tabindex="-1" role="dialog" aria-labelledby="filter-heading" aria-hidden="true">

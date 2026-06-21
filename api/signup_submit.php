@@ -2,10 +2,20 @@
     require("../includes/database_connect.php");
     header('Content-Type: application/json; charset=utf-8');
     require("../includes/mail_helper.php");
+    require_once("../includes/rate_limiter.php");
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-    if (empty($csrf_token) || $csrf_token !== $_SESSION['csrf_token']) {
+    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
         $response = array("success" => false, "message" => "Security verification failed (CSRF token mismatch).");
+        echo json_encode($response);
+        return;
+    }
+
+    // Rate limit: max 3 signup OTP requests per IP per 15 minutes
+    $client_ip = get_client_ip();
+    $rate = check_rate_limit($conn, 'signup_otp', $client_ip, 3, 900);
+    if (!$rate['allowed']) {
+        $response = array("success" => false, "message" => "Too many signup requests. Please try again in " . format_retry_after($rate['retry_after']) . ".");
         echo json_encode($response);
         return;
     }

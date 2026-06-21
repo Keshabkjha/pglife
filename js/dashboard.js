@@ -1011,6 +1011,69 @@ window.addEventListener("load", function () {
             event.preventDefault();
         });
     });
+
+    // Handle Delete Account form submission
+    var delete_account_form = document.getElementById("delete-account-form");
+    if (delete_account_form) {
+        delete_account_form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            var password = document.getElementById("delete-confirm-password").value;
+            if (!password || password.length < 8) {
+                var errorDiv = document.getElementById("delete-account-error");
+                errorDiv.textContent = "Please enter your password to confirm deletion.";
+                errorDiv.classList.remove("d-none");
+                return;
+            }
+
+            var confirmBtn = document.getElementById("confirm-delete-btn");
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Deleting...';
+
+            var XHR = new XMLHttpRequest();
+            var form_data = new FormData();
+            form_data.append("csrf_token", window.csrf_token);
+            form_data.append("password", password);
+
+            XHR.addEventListener("load", function (resp) {
+                document.getElementById("loading").style.display = 'none';
+                try {
+                    var response = JSON.parse(resp.target.responseText);
+                    if (response.success) {
+                        showToast(response.message, 'success');
+                        setTimeout(function() {
+                            window.location.href = "/home";
+                        }, 1500);
+                    } else {
+                        var errorDiv = document.getElementById("delete-account-error");
+                        errorDiv.textContent = response.message || 'Failed to delete account.';
+                        errorDiv.classList.remove("d-none");
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '<i class="fas fa-trash-alt mr-1"></i>Permanently Delete My Account';
+                    }
+                } catch (err) {
+                    var errorDiv = document.getElementById("delete-account-error");
+                    errorDiv.textContent = "An unexpected error occurred. Please try again.";
+                    errorDiv.classList.remove("d-none");
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-trash-alt mr-1"></i>Permanently Delete My Account';
+                }
+            });
+
+            XHR.addEventListener("error", function () {
+                document.getElementById("loading").style.display = 'none';
+                var errorDiv = document.getElementById("delete-account-error");
+                errorDiv.textContent = "Network error. Please try again.";
+                errorDiv.classList.remove("d-none");
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-trash-alt mr-1"></i>Permanently Delete My Account';
+            });
+
+            XHR.open("POST", "api/delete_account.php");
+            XHR.send(form_data);
+            document.getElementById("loading").style.display = 'block';
+        });
+    }
 });
 
 var remove_card_smoothly = function (card) {

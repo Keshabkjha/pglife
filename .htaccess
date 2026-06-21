@@ -36,6 +36,15 @@ RewriteRule ^dashboard/?$ dashboard.php [L,QSA]
 # /logout              → logout.php
 RewriteRule ^logout/?$    logout.php [L,QSA]
 
+# /privacy             → privacy_policy.php
+RewriteRule ^privacy/?$   privacy_policy.php [L,QSA]
+
+# /terms               → terms_of_service.php
+RewriteRule ^terms/?$     terms_of_service.php [L,QSA]
+
+# /disclaimer          → disclaimer.php
+RewriteRule ^disclaimer/?$ disclaimer.php [L,QSA]
+
 # Redirect old .php URLs to clean URLs (301 permanent)
 # Works in both root and subdirectories (e.g., /pglife/home.php -> /pglife/home)
 
@@ -60,4 +69,5 @@ RewriteRule ^property_detail\.php$ /%1pg/%2? [R=301,L]
     Header always set X-Frame-Options "SAMEORIGIN"
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://use.fontawesome.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://use.fontawesome.com https://fonts.gstatic.com; img-src 'self' data: blob: https://unpkg.com https://*.openstreetmap.org; connect-src 'self' https://nominatim.openstreetmap.org; frame-ancestors 'self';"
 </IfModule>

@@ -1,11 +1,80 @@
 /* ==================================================
    PGLife - common.js
-   Handles: Auth forms (signup/login/otp),
-            Page transitions (no-blink),
-            Toast notifications
+   Dark mode, auth forms, page transitions, toasts
    ================================================== */
 
-// ---- Toast Notification System ----
+// Dark mode - apply saved preference immediately
+(function() {
+    var saved = localStorage.getItem('pglife_dark_mode');
+    if (saved === '1') {
+        document.body.classList.add('dark-mode');
+    }
+})();
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Dark mode toggle (desktop nav)
+    var toggle = document.getElementById('dark-mode-toggle');
+    if (toggle) {
+        var icon = document.getElementById('dark-mode-icon');
+        if (document.body.classList.contains('dark-mode')) {
+            icon.className = 'fas fa-sun';
+        }
+        toggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            var isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('pglife_dark_mode', isDark ? '1' : '0');
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            var drawerIcon = document.getElementById('dark-mode-icon-drawer');
+            if (drawerIcon) drawerIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        });
+    }
+
+    // Dark mode toggle (mobile drawer)
+    var drawerToggle = document.getElementById('dark-mode-toggle-drawer');
+    if (drawerToggle) {
+        var drawerIcon = document.getElementById('dark-mode-icon-drawer');
+        if (document.body.classList.contains('dark-mode')) {
+            drawerIcon.className = 'fas fa-sun';
+        }
+        drawerToggle.addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+            var isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('pglife_dark_mode', isDark ? '1' : '0');
+            drawerIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            var desktopIcon = document.getElementById('dark-mode-icon');
+            if (desktopIcon) desktopIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        });
+    }
+
+    // Mobile drawer open/close
+    var menuBtn = document.getElementById('mobile-menu-btn');
+    var drawer = document.getElementById('mobile-drawer');
+    var overlay = document.getElementById('mobile-drawer-overlay');
+    var closeBtn = document.getElementById('mobile-drawer-close');
+
+    function openDrawer() {
+        drawer.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+        drawer.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (menuBtn) menuBtn.addEventListener('click', openDrawer);
+    if (overlay) overlay.addEventListener('click', closeDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+    // Close drawer when a link with data-close-drawer is tapped
+    var drawerLinks = document.querySelectorAll('[data-close-drawer]');
+    drawerLinks.forEach(function(link) {
+        link.addEventListener('click', closeDrawer);
+    });
+});
+
+// Toast notifications
 function showToast(message, type) {
     type = type || 'info'; // 'success', 'error', 'info', 'warning'
     var toastId = 'pglife-toast-' + Date.now();
@@ -49,11 +118,9 @@ function showToast(message, type) {
     }, 4500);
 }
 
-// ---- Smooth Page Navigate (zero-blink) ----
-// The page starts invisible (opacity:0 on html element, set immediately by inline style).
-// We animate body out, navigate, and the new page fades in via CSS animation.
+// Smooth page transitions (fade out, navigate, fade in on new page)
 function navigateTo(url) {
-    // Prevent double-navigation
+    // Block double-clicks
     if (window._navigating) return;
     window._navigating = true;
 
@@ -68,8 +135,7 @@ function navigateTo(url) {
     }, 270);
 }
 
-// Intercept anchor clicks for smooth navigation
-// (skip: modal-openers, external links, anchors, API, download, target=_blank)
+// Intercept link clicks for smooth transitions (skip modals, external, anchors)
 document.addEventListener('click', function(e) {
     var link = e.target.closest('a[href]');
     if (!link) return;
@@ -82,9 +148,8 @@ document.addEventListener('click', function(e) {
     navigateTo(href);
 }, false);
 
-// Intercept browser Back/Forward so fade-in runs
+// Restore page visibility when using browser back/forward
 window.addEventListener('pageshow', function(e) {
-    // Restore body visibility if page was restored from bfcache
     if (e.persisted) {
         document.body.style.transition = 'none';
         document.body.style.opacity = '1';
@@ -94,11 +159,65 @@ window.addEventListener('pageshow', function(e) {
     }
 });
 
-// ---- Load Event ----
+// Wire up forms on page load
 window.addEventListener("load", function () {
-    // --- Signup Form ---
+    // Inline validation helpers
+    function setFieldState(input, isValid, message) {
+        var group = input.closest('.form-group') || input.closest('.input-group').parentNode;
+        var feedback = group.querySelector('.field-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'field-feedback';
+            feedback.style.cssText = 'font-size:11px;margin-top:2px;min-height:16px;';
+            group.appendChild(feedback);
+        }
+        if (isValid) {
+            input.style.borderColor = '#28a745';
+            feedback.style.color = '#28a745';
+            feedback.textContent = message || '';
+        } else {
+            input.style.borderColor = '#dc3545';
+            feedback.style.color = '#dc3545';
+            feedback.textContent = message || '';
+        }
+    }
+
+    function clearFieldState(input) {
+        input.style.borderColor = '';
+        var group = input.closest('.form-group') || input.closest('.input-group').parentNode;
+        var feedback = group ? group.querySelector('.field-feedback') : null;
+        if (feedback) feedback.textContent = '';
+    }
+
+    // Wire inline validation to signup form
     var signup_form = document.getElementById("signup-form");
     if (signup_form) {
+        var emailInput = signup_form.querySelector('[name="email"]');
+        var phoneInput = signup_form.querySelector('[name="phone"]');
+        var passInput = signup_form.querySelector('[name="password"]');
+        var nameInput = signup_form.querySelector('[name="full_name"]');
+
+        if (emailInput) emailInput.addEventListener('blur', function() {
+            if (!this.value) return clearFieldState(this);
+            var valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+            setFieldState(this, valid, valid ? '' : 'Enter a valid email address');
+        });
+        if (phoneInput) phoneInput.addEventListener('blur', function() {
+            if (!this.value) return clearFieldState(this);
+            var valid = /^\d{10}$/.test(this.value);
+            setFieldState(this, valid, valid ? '' : 'Phone must be exactly 10 digits');
+        });
+        if (passInput) passInput.addEventListener('input', function() {
+            if (!this.value) return clearFieldState(this);
+            var valid = this.value.length >= 8;
+            setFieldState(this, valid, valid ? '' : 'At least 8 characters required');
+        });
+        if (nameInput) nameInput.addEventListener('blur', function() {
+            if (!this.value) return clearFieldState(this);
+            var valid = this.value.trim().length >= 2;
+            setFieldState(this, valid, valid ? '' : 'Name must be at least 2 characters');
+        });
+
         signup_form.addEventListener("submit", function (event) {
             var XHR = new XMLHttpRequest();
             var form_data = new FormData(signup_form);
@@ -113,7 +232,7 @@ window.addEventListener("load", function () {
         });
     }
 
-    // --- OTP Form ---
+    // OTP verification form
     var otp_form = document.getElementById("otp-form");
     if (otp_form) {
         otp_form.addEventListener("submit", function (event) {
@@ -130,7 +249,7 @@ window.addEventListener("load", function () {
         });
     }
 
-    // --- Login Form ---
+    // Login form
     var login_form = document.getElementById("login-form");
     if (login_form) {
         login_form.addEventListener("submit", function (event) {
@@ -147,7 +266,7 @@ window.addEventListener("load", function () {
         });
     }
 
-    // --- Forgot Password Form ---
+    // Forgot password form
     var forgot_form = document.getElementById("forgot-form");
     if (forgot_form) {
         forgot_form.addEventListener("submit", function (event) {
@@ -192,7 +311,7 @@ window.addEventListener("load", function () {
         });
     }
 
-    // --- Reset Password Form ---
+    // Reset password form
     var reset_form = document.getElementById("reset-form");
     if (reset_form) {
         reset_form.addEventListener("submit", function (event) {
@@ -206,10 +325,8 @@ window.addEventListener("load", function () {
                     if (response.success) {
                         showToast(response.message || 'Password reset successfully!', 'success');
                         setTimeout(function() {
-                            // Reset modal states and switch back to login modal
                             window.$("#forgot-password-modal").modal("hide");
                             
-                            // Reset forms inside modal
                             document.getElementById("forgot-form").reset();
                             document.getElementById("forgot-form").style.display = "block";
                             document.getElementById("forgot-form").style.opacity = "1";
@@ -234,9 +351,14 @@ window.addEventListener("load", function () {
             event.preventDefault();
         });
     }
+
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+    }
 });
 
-// ---- Success/Error Handlers ----
+// Form response handlers
 var signup_success = function (event) {
     document.getElementById("loading").style.display = 'none';
     var response = JSON.parse(event.target.responseText);
