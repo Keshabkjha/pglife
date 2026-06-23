@@ -169,6 +169,39 @@ function initLightbox() {
         });
     }
 
+    function getFileExtension(url) {
+        if (!url) return 'jpg';
+        if (url.startsWith('data:')) {
+            var mimeMatch = url.match(/data:([^;]+);/);
+            if (mimeMatch && mimeMatch[1]) {
+                var ext = mimeMatch[1].split('/')[1];
+                if (ext) {
+                    ext = ext.toLowerCase();
+                    if (ext.indexOf('svg') !== -1) return 'svg';
+                    if (ext === 'jpeg') return 'jpg';
+                    return ext;
+                }
+            }
+            return 'jpg';
+        }
+        var pathWithoutQuery = url.split(/[?#]/)[0];
+        var parts = pathWithoutQuery.split('.');
+        if (parts.length > 1) {
+            var detectedExt = parts.pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].indexOf(detectedExt) !== -1) {
+                return detectedExt === 'jpeg' ? 'jpg' : detectedExt;
+            }
+        }
+        return 'jpg';
+    }
+
+    function getCleanFilename(alt) {
+        var clean = (alt || '')
+            .replace(/[^a-zA-Z0-9\s-_]/g, '')
+            .trim();
+        return clean || 'property_image';
+    }
+
     function updateLightbox() {
         lightboxImg.src = images[currentIndex];
         lightboxImg.alt = alts[currentIndex];
@@ -176,11 +209,12 @@ function initLightbox() {
             lightboxCounter.textContent = (currentIndex + 1) + ' / ' + images.length + ' photos';
         }
 
-        // Update download button href
+        // Update download button href and download filename attribute
         var dlBtn = document.getElementById('lightbox-download-btn');
         if (dlBtn) {
-            dlBtn.href = images[currentIndex];
-            dlBtn.download = alts[currentIndex] + '.jpg';
+            var imgUrl = images[currentIndex];
+            dlBtn.href = imgUrl;
+            dlBtn.download = getCleanFilename(alts[currentIndex]) + '.' + getFileExtension(imgUrl);
         }
     }
 
@@ -215,6 +249,69 @@ function initLightbox() {
     var nextBtn = document.getElementById('lightbox-next');
     if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); navigate(-1); });
     if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); navigate(1); });
+
+    // Download button event listener to handle CORS / dynamic extensions
+    var dlBtn = document.getElementById('lightbox-download-btn');
+    if (dlBtn) {
+        dlBtn.addEventListener('click', function(e) {
+            var imgUrl = images[currentIndex];
+            if (!imgUrl || imgUrl.startsWith('data:')) {
+                // Let the browser handle standard data URI download
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            showToast('Downloading image...', 'info');
+
+            fetch(imgUrl)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('Response status ' + response.status);
+                    return response.blob();
+                })
+                .then(function(blob) {
+                    var objectUrl = URL.createObjectURL(blob);
+                    
+                    var ext = getFileExtension(imgUrl);
+                    if (blob.type) {
+                        var mimeParts = blob.type.split('/');
+                        if (mimeParts.length > 1) {
+                            var mimeExt = mimeParts[1].toLowerCase();
+                            if (mimeExt.indexOf('svg') !== -1) ext = 'svg';
+                            else if (mimeExt === 'jpeg') ext = 'jpg';
+                            else if (['jpg', 'png', 'gif', 'webp', 'svg'].indexOf(mimeExt) !== -1) {
+                                ext = mimeExt;
+                            }
+                        }
+                    }
+                    
+                    var filename = getCleanFilename(alts[currentIndex]) + '.' + ext;
+                    
+                    var tempLink = document.createElement('a');
+                    tempLink.href = objectUrl;
+                    tempLink.download = filename;
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+                    
+                    setTimeout(function() {
+                        URL.revokeObjectURL(objectUrl);
+                    }, 100);
+                })
+                .catch(function(err) {
+                    console.error('Fetch download failed, falling back:', err);
+                    // Fallback to opening in new window / tab
+                    var tempLink = document.createElement('a');
+                    tempLink.href = imgUrl;
+                    tempLink.target = '_blank';
+                    tempLink.download = getCleanFilename(alts[currentIndex]) + '.' + getFileExtension(imgUrl);
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+                });
+        });
+    }
 
     // Keyboard navigation
     document.addEventListener('keydown', function(e) {
