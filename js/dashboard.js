@@ -1267,7 +1267,7 @@ $('#save-rooms-btn').click(function () {
     });
 
     if (!valid) {
-        alert('Please fill all required fields (Label and Price) for each room type.');
+        showToast('Please fill all required fields (Label and Price) for each room type.', 'warning');
         return;
     }
 
@@ -1293,12 +1293,12 @@ $('#save-rooms-btn').click(function () {
                     location.reload();
                 }, 1200);
             } else {
-                alert(res.message || 'Could not save room types.');
+                showToast(res.message || 'Could not save room types.', 'error');
             }
         },
         error: function () {
             $('#save-rooms-btn').prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Save Room Types');
-            alert('Server error. Please try again.');
+            showToast('Server error. Please try again.', 'error');
         }
     });
 });

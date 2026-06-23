@@ -22,7 +22,8 @@
                  FROM messages m
                  INNER JOIN properties p ON m.property_id = p.id
                  INNER JOIN users u ON u.id = (CASE WHEN m.sender_id = ? THEN m.receiver_id ELSE m.sender_id END)
-                 WHERE m.sender_id = ? OR m.receiver_id = ?";
+                 WHERE m.sender_id = ? OR m.receiver_id = ?
+                 LIMIT 50";
     $stmt_conv = mysqli_prepare($conn, $sql_conv);
     if (!$stmt_conv) {
         echo json_encode(array("success" => false, "message" => "Something went wrong!"));
@@ -87,6 +88,11 @@
             "unread_count" => $unread_count
         );
     }
+
+    // Sort conversations by last message time (most recent first)
+    usort($data, function($a, $b) {
+        return strcmp($b['last_time'] ?? '', $a['last_time'] ?? '');
+    });
 
     echo json_encode(array("success" => true, "data" => $data));
     mysqli_close($conn);

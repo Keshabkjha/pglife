@@ -17,8 +17,16 @@ window.addEventListener ("load", function () {
             // initiate the request
             XHR.send("property_id=" + encodeURIComponent(property_id) + "&csrf_token=" + encodeURIComponent(window.csrf_token));
 
-            document.getElementById("loading").style.display = "block";
+            showLoading();
             event.preventDefault();
+        });
+
+        // Keyboard accessibility for heart icon
+        is_interested_image.addEventListener("keydown", function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                this.click();
+            }
         });
     }
 
@@ -36,7 +44,7 @@ window.addEventListener ("load", function () {
             XHR.open("POST", "api/book_property.php");
             XHR.send(form_data);
 
-            document.getElementById("loading").style.display = "block";
+            showLoading();
             event.preventDefault();
         });
     }
@@ -112,14 +120,138 @@ window.addEventListener ("load", function () {
             XHR.open("POST", "api/add_review.php");
             XHR.send(form_data);
 
-            document.getElementById("loading").style.display = "block";
+            showLoading();
             event.preventDefault();
         });
     }
+    // ── Image Lightbox ──
+    initLightbox();
 });
 
+// ── Lightbox Module ──
+function initLightbox() {
+    var carouselImages = document.querySelectorAll('#property-images .carousel-item img');
+    if (carouselImages.length === 0) return;
+
+    var lightbox        = document.getElementById('image-lightbox');
+    var lightboxImg     = document.getElementById('lightbox-img');
+    var lightboxCounter = document.getElementById('lightbox-counter');
+    if (!lightbox) return;
+
+    var images = [];
+    var alts   = [];
+    var currentIndex = 0;
+
+    carouselImages.forEach(function(img, idx) {
+        images.push(img.src);
+        alts.push(img.alt || 'Property image ' + (idx + 1));
+        img.addEventListener('click', function() {
+            currentIndex = idx;
+            openLightbox();
+        });
+    });
+
+    // Update carousel overlay counter badge
+    var overlayBadge = document.getElementById('carousel-photo-count');
+    if (overlayBadge) {
+        overlayBadge.textContent = images.length + ' photo' + (images.length !== 1 ? 's' : '');
+    }
+
+    // Sync lightbox when Bootstrap carousel slides
+    var bsCarousel = document.getElementById('property-images');
+    if (bsCarousel) {
+        bsCarousel.addEventListener('slide.bs.carousel', function(e) {
+            currentIndex = e.to;
+        });
+        // Bootstrap 3/4 uses slid.bs.carousel
+        bsCarousel.addEventListener('slid.bs.carousel', function(e) {
+            if (e.to !== undefined) currentIndex = e.to;
+        });
+    }
+
+    function updateLightbox() {
+        lightboxImg.src = images[currentIndex];
+        lightboxImg.alt = alts[currentIndex];
+        if (lightboxCounter) {
+            lightboxCounter.textContent = (currentIndex + 1) + ' / ' + images.length + ' photos';
+        }
+
+        // Update download button href
+        var dlBtn = document.getElementById('lightbox-download-btn');
+        if (dlBtn) {
+            dlBtn.href = images[currentIndex];
+            dlBtn.download = alts[currentIndex] + '.jpg';
+        }
+    }
+
+    function openLightbox() {
+        updateLightbox();
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        lightboxImg.focus();
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function navigate(dir) {
+        currentIndex = (currentIndex + dir + images.length) % images.length;
+        updateLightbox();
+    }
+
+    // Close button
+    var closeBtn = document.getElementById('lightbox-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeLightbox);
+
+    // Click backdrop to close
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) closeLightbox();
+    });
+
+    // Navigation buttons
+    var prevBtn = document.getElementById('lightbox-prev');
+    var nextBtn = document.getElementById('lightbox-next');
+    if (prevBtn) prevBtn.addEventListener('click', function(e) { e.stopPropagation(); navigate(-1); });
+    if (nextBtn) nextBtn.addEventListener('click', function(e) { e.stopPropagation(); navigate(1); });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape')     closeLightbox();
+        if (e.key === 'ArrowLeft')  navigate(-1);
+        if (e.key === 'ArrowRight') navigate(1);
+    });
+
+    // Share button inside lightbox
+    var shareBtn = document.getElementById('lightbox-share-btn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var imgUrl = images[currentIndex];
+            var propName = document.querySelector('.property-name');
+            var title = propName ? propName.textContent.trim() : 'Property Image';
+            
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (navigator.share && isMobile) {
+                navigator.share({ title: title, url: imgUrl }).catch(function() {});
+            } else {
+                // Clipboard fallback
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(imgUrl).then(function() {
+                        showToast('Image link copied to clipboard!', 'success');
+                    });
+                } else {
+                    showToast('Copy this URL: ' + imgUrl, 'info');
+                }
+            }
+        });
+    }
+}
+
 var toggle_interested_success = function (event) {
-    document.getElementById("loading").style.display = "none";
+    hideLoading();
 
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
@@ -139,13 +271,15 @@ var toggle_interested_success = function (event) {
                 interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) - 1;
             }
         }
-    } else if (!response.success && !response.is_logged_in) {
+    } else if (!response.success && response.is_logged_in === false) {
         window.$('#login-modal').modal("show");
+    } else {
+        showToast(response.message || 'You are not allowed to perform this action.', 'warning');
     }
 };
 
 var book_property_success = function (event) {
-    document.getElementById("loading").style.display = "none";
+    hideLoading();
 
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
@@ -163,7 +297,7 @@ var book_property_success = function (event) {
 };
 
 var add_review_success = function (event) {
-    document.getElementById("loading").style.display = "none";
+    hideLoading();
 
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
@@ -181,6 +315,6 @@ var add_review_success = function (event) {
 };
 
 var on_error = function () {
-    document.getElementById("loading").style.display = "none";
+    hideLoading();
     showToast('A network error occurred. Please check your connection.', 'error');
 };

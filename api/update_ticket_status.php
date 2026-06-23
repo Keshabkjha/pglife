@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
 
     // 1. Verify CSRF Token
@@ -75,6 +76,20 @@
         return;
     }
 
+    // Get property name to notify seeker
+    $prop_name = '';
+    $sql_prop = "SELECT name FROM properties WHERE id = ?";
+    $stmt_prop = mysqli_prepare($conn, $sql_prop);
+    if ($stmt_prop) {
+        mysqli_stmt_bind_param($stmt_prop, "i", $property_id);
+        mysqli_stmt_execute($stmt_prop);
+        $res_prop = mysqli_stmt_get_result($stmt_prop);
+        if ($row_prop = mysqli_fetch_assoc($res_prop)) {
+            $prop_name = $row_prop['name'];
+        }
+        mysqli_stmt_close($stmt_prop);
+    }
+
     // 6. Update Ticket Status
     $sql_update = "UPDATE maintenance_tickets SET status = ? WHERE id = ?";
     $stmt_update = mysqli_prepare($conn, $sql_update);
@@ -87,6 +102,12 @@
     mysqli_stmt_close($stmt_update);
 
     if ($result_update) {
+        if ($role === 'owner') {
+            // Notify seeker about status update
+            $notif_title = 'Maintenance ticket ' . $status;
+            $notif_body = 'Your maintenance ticket for ' . $prop_name . ' has been marked as ' . $status . '.';
+            create_notification($conn, $ticket_owner_id, 'message', $notif_title, $notif_body, '/dashboard');
+        }
         echo json_encode(array("success" => true, "message" => "Ticket status successfully updated to '" . $status . "'!", "ticket_id" => $ticket_id, "status" => $status));
     } else {
         echo json_encode(array("success" => false, "message" => "Failed to update ticket status."));

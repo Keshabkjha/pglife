@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -58,6 +59,19 @@
     if (!$result) {
         echo json_encode(array("success" => false, "message" => "Something went wrong!"));
         return;
+    }
+
+    // Notify property owner about new review
+    $sql_prop = "SELECT owner_id, name FROM properties WHERE id = ?";
+    $stmt_prop = mysqli_prepare($conn, $sql_prop);
+    if ($stmt_prop) {
+        mysqli_stmt_bind_param($stmt_prop, "i", $property_id);
+        mysqli_stmt_execute($stmt_prop);
+        $res_prop = mysqli_stmt_get_result($stmt_prop);
+        if ($row_prop = mysqli_fetch_assoc($res_prop)) {
+            create_notification($conn, (int)$row_prop['owner_id'], 'review', 'New review on ' . $row_prop['name'], $user_name . ' left a ' . $rating . '-star review on ' . $row_prop['name'], '/pg/' . $property_id);
+        }
+        mysqli_stmt_close($stmt_prop);
     }
 
     // Recalculate average rating for the property and update the properties table

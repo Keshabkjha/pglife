@@ -1,5 +1,6 @@
 <?php
     require "../includes/database_connect.php";
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
     if(!isset($_SESSION['user_id'])) {
         echo json_encode(array("success" => false, "is_logged_in" => false, "message" => "Please login to continue."));
@@ -7,7 +8,7 @@
     }
 
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'seeker') {
-        echo json_encode(array("success" => false, "message" => "Unauthorized access. Only seekers can express interest in properties."));
+        echo json_encode(array("success" => false, "is_logged_in" => true, "message" => "Only seekers can add properties to their wishlist."));
         return;
     }
 
@@ -69,6 +70,19 @@
             echo json_encode(array('success' => false, 'message' => "Something went wrong!"));
             return;
         } else {        
+            // Notify property owner about new interest
+            $sql_prop = "SELECT owner_id, name FROM properties WHERE id = ?";
+            $stmt_prop = mysqli_prepare($conn, $sql_prop);
+            if ($stmt_prop) {
+                mysqli_stmt_bind_param($stmt_prop, "i", $property_id);
+                mysqli_stmt_execute($stmt_prop);
+                $res_prop = mysqli_stmt_get_result($stmt_prop);
+                if ($row_prop = mysqli_fetch_assoc($res_prop)) {
+                    $seeker_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : 'A seeker';
+                    create_notification($conn, (int)$row_prop['owner_id'], 'interest', $seeker_name . ' is interested in your property', $seeker_name . ' is interested in ' . $row_prop['name'], '/pg/' . $property_id);
+                }
+                mysqli_stmt_close($stmt_prop);
+            }
             echo json_encode(array('success' => true, 'is_interested' => true, 'property_id' => $property_id));
             return;
         }

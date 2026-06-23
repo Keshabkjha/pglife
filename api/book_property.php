@@ -1,12 +1,7 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
-
-    $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
-    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
-        echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
-        return;
-    }
 
     if (!isset($_SESSION['user_id'])) {
         echo json_encode(array("success" => false, "is_logged_in" => false, "message" => "Please login to book a property."));
@@ -14,7 +9,13 @@
     }
 
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'seeker') {
-        echo json_encode(array("success" => false, "message" => "Unauthorized access. Only seekers can book properties."));
+        echo json_encode(array("success" => false, "is_logged_in" => true, "message" => "Only seekers can book properties."));
+        return;
+    }
+
+    $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
+    if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
+        echo json_encode(array("success" => false, "message" => "Security verification failed (CSRF token mismatch)."));
         return;
     }
 
@@ -59,6 +60,22 @@
     if (!$result_book) {
         echo json_encode(array("success" => false, "message" => "Something went wrong!"));
         return;
+    }
+
+    // Get property owner to notify
+    $sql_owner = "SELECT owner_id, name FROM properties WHERE id = ?";
+    $stmt_owner = mysqli_prepare($conn, $sql_owner);
+    if ($stmt_owner) {
+        mysqli_stmt_bind_param($stmt_owner, "i", $property_id);
+        mysqli_stmt_execute($stmt_owner);
+        $res_owner = mysqli_stmt_get_result($stmt_owner);
+        if ($row_owner = mysqli_fetch_assoc($res_owner)) {
+            $owner_id_notif = (int)$row_owner['owner_id'];
+            $prop_name = $row_owner['name'];
+            $seeker_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : 'A seeker';
+            create_notification($conn, $owner_id_notif, 'booking', $seeker_name . ' booked your property', $seeker_name . ' booked ' . $prop_name, '/pg/' . $property_id);
+        }
+        mysqli_stmt_close($stmt_owner);
     }
 
     echo json_encode(array("success" => true, "message" => "Property successfully booked!"));

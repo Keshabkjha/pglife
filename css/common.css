@@ -153,17 +153,32 @@ input[type="radio"] {
 #loading {
     display: none;
     background-color: rgba(15, 23, 42, 0.6);
-    background-image: url("../img/progress_spinner.gif");
-    background-repeat: no-repeat;
-    background-position: center;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     position: fixed;
     top: 0px;
     right: 0px;
     width: 100%;
     height: 100%;
     z-index: 10000000;
+}
+
+#loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: loading-spin 0.7s linear infinite;
+}
+
+@keyframes loading-spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Modals */
@@ -345,17 +360,15 @@ input[type="radio"] {
 
 /* Page Fade-In Animation */
 body {
-    animation: fadeInPage 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: fadeInPage 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes fadeInPage {
     from {
         opacity: 0;
-        transform: translateY(8px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
@@ -982,6 +995,208 @@ body.dark-mode .text-muted {
     color: #64748B !important;
 }
 
+body.dark-mode .rent-unit {
+    color: #64748B !important;
+}
+
+/* Accessibility: Focus indicators for interactive elements */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.interested-container i:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+    border-radius: 50%;
+}
+
+body.dark-mode .interested-container i:focus {
+    outline-color: #818CF8;
+}
+
+.property-card:focus-within {
+    box-shadow: 0 0 0 2px var(--primary-color), var(--shadow-md);
+}
+
+/* ── Notification System ── */
+.notification-bell-container {
+    position: relative;
+}
+
+.notification-bell-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-color);
+    cursor: pointer;
+    position: relative;
+    padding: 6px;
+    transition: color 0.2s;
+}
+
+.notification-bell-btn:hover {
+    color: var(--primary-color);
+}
+
+.notification-count-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ef4444;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+}
+
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 320px;
+    max-height: 400px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1070;
+    overflow: hidden;
+}
+
+@media (max-width: 576px) {
+    .notification-dropdown {
+        width: 280px;
+        right: -40px;
+    }
+}
+
+.notif-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+}
+
+.notif-dropdown-body {
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.notif-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    color: var(--text-color);
+    transition: background 0.15s;
+    cursor: pointer;
+}
+
+.notif-item:hover {
+    background: var(--light-bg);
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.notif-item.notif-unread {
+    background: rgba(79, 70, 229, 0.04);
+    border-left: 3px solid var(--primary-color);
+}
+
+.notif-icon {
+    font-size: 16px;
+    color: var(--primary-color);
+    margin-top: 2px;
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+}
+
+.notif-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notif-body {
+    font-size: 12px;
+    color: var(--text-color);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notif-time {
+    font-size: 10px;
+    color: #94A3B8;
+}
+
+/* Dark mode notifications */
+body.dark-mode .notification-dropdown {
+    background: #1E293B;
+    border-color: #334155;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .notif-dropdown-header {
+    border-bottom-color: #334155;
+}
+
+body.dark-mode .notif-item {
+    border-bottom-color: #334155;
+    color: #CBD5E1;
+}
+
+body.dark-mode .notif-item:hover {
+    background: #0F172A;
+    color: #CBD5E1;
+}
+
+body.dark-mode .notif-item.notif-unread {
+    background: rgba(129, 140, 248, 0.08);
+    border-left-color: #818CF8;
+}
+
+body.dark-mode .notif-title {
+    color: #F1F5F9;
+}
+
+body.dark-mode .notif-body {
+    color: #94A3B8;
+}
+
+body.dark-mode .notification-bell-btn {
+    color: #CBD5E1;
+}
+
+body.dark-mode .notification-bell-btn:hover {
+    color: #818CF8;
+}
+
 body.dark-mode .border,
 body.dark-mode .border-top,
 body.dark-mode .border-bottom {
@@ -1197,4 +1412,60 @@ body.dark-mode .mobile-drawer-user {
 
 body.dark-mode .mobile-drawer-close:hover {
     background: #0F172A;
+}
+
+/* ── Global Share Modal Styles ── */
+.share-options-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 16px 0;
+}
+
+@media (max-width: 576px) {
+    .share-options-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+}
+
+.share-option-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--light-bg);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.share-option-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+}
+
+.share-option-btn i {
+    font-size: 24px;
+}
+
+.share-option-btn.whatsapp { color: #25D366; }
+.share-option-btn.email { color: #EA4335; }
+.share-option-btn.facebook { color: #1877F2; }
+.share-option-btn.twitter { color: #1DA1F2; }
+.share-option-btn.copy-link { color: var(--primary-color); }
+
+body.dark-mode .share-option-btn {
+    background: #0F172A;
+    border-color: #334155;
+}
+
+body.dark-mode .share-option-btn:hover {
+    border-color: #818CF8;
 }

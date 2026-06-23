@@ -40,9 +40,31 @@
         <a class="navbar-brand" href="/home">
             <img src="img/logo.png" alt="PG Life" />
         </a>
-        <button class="mobile-menu-btn d-md-none" type="button" id="mobile-menu-btn" aria-label="Open navigation menu">
-            <i class="fas fa-bars"></i>
-        </button>
+        <div class="d-flex align-items-center ml-auto d-md-none">
+            <?php if (isset($_SESSION['user_id'])) { ?>
+                <div class="notification-bell-container mr-3">
+                    <button type="button" class="notification-bell-btn" id="notification-bell-mobile" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-count-badge d-none" id="notif-count-mobile">0</span>
+                    </button>
+                    <div class="notification-dropdown d-none" id="notif-dropdown-mobile">
+                        <div class="notif-dropdown-header">
+                            <span class="font-weight-bold">Notifications</span>
+                            <a href="#" id="mark-all-read-btn-mobile" class="text-primary" style="font-size:12px;">Mark all read</a>
+                        </div>
+                        <div class="notif-dropdown-body" id="notif-list-mobile">
+                            <div class="notif-empty text-center py-3 text-muted" style="font-size: 13px;">
+                                <i class="far fa-bell-slash mb-2" style="font-size: 24px; opacity: 0.4; display: block;"></i>
+                                No notifications yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+            <button class="mobile-menu-btn" type="button" id="mobile-menu-btn" aria-label="Open navigation menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#my-navbar">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -73,16 +95,32 @@
                 ?>
                 <div class='nav-name d-flex align-items-center'>
                     <?php
-                        $header_avatar = 'img/man.png';
+                        $header_avatar = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($_SESSION['full_name']) . '&backgroundColor=6366f1,8b5cf6,ec4899&radius=50';
                         if (!empty($_SESSION['profile_pic'])) {
                             $header_avatar = $_SESSION['profile_pic'];
-                        } elseif (isset($_SESSION['gender']) && $_SESSION['gender'] === 'female') {
-                            $header_avatar = 'img/Female_icon.png';
                         }
                     ?>
                     <img src="<?= htmlspecialchars($header_avatar) ?>" class="rounded-circle mr-2" style="width: 25px; height: 25px; object-fit: cover; border: 1px solid rgba(0,0,0,0.1);" alt="Avatar" />
                     Hi, <?= htmlspecialchars($_SESSION["full_name"]) ?>
                 </div>
+                <li class="nav-item notification-bell-container">
+                    <button type="button" class="notification-bell-btn" id="notification-bell" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-count-badge d-none" id="notif-count">0</span>
+                    </button>
+                    <div class="notification-dropdown d-none" id="notif-dropdown">
+                        <div class="notif-dropdown-header">
+                            <span class="font-weight-bold">Notifications</span>
+                            <a href="#" id="mark-all-read-btn" class="text-primary" style="font-size:12px;">Mark all read</a>
+                        </div>
+                        <div class="notif-dropdown-body" id="notif-list">
+                            <div class="notif-empty text-center py-3 text-muted" style="font-size: 13px;">
+                                <i class="far fa-bell-slash mb-2" style="font-size: 24px; opacity: 0.4; display: block;"></i>
+                                No notifications yet
+                            </div>
+                        </div>
+                    </div>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/dashboard">
                         <i class="fas fa-user"></i><?= (isset($_SESSION['role']) && $_SESSION['role'] === 'owner') ? 'Owner Dashboard' : 'Dashboard' ?>
@@ -145,11 +183,9 @@
     <?php } else { ?>
         <li class="mobile-drawer-item mobile-drawer-user">
             <?php
-                $drawer_avatar = 'img/man.png';
+                $drawer_avatar = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($_SESSION['full_name']) . '&backgroundColor=6366f1,8b5cf6,ec4899&radius=50';
                 if (!empty($_SESSION['profile_pic'])) {
                     $drawer_avatar = $_SESSION['profile_pic'];
-                } elseif (isset($_SESSION['gender']) && $_SESSION['gender'] === 'female') {
-                    $drawer_avatar = 'img/Female_icon.png';
                 }
             ?>
             <img src="<?= htmlspecialchars($drawer_avatar) ?>" class="rounded-circle mr-2" style="width: 28px; height: 28px; object-fit: cover;" alt="Avatar" />

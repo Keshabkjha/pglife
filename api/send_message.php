@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -86,6 +87,14 @@
     mysqli_stmt_close($stmt_insert);
 
     if ($result) {
+        // Notify receiver about new message or offer
+        $sender_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : 'Someone';
+        if ($offer_amount > 0) {
+            create_notification($conn, $receiver_id, 'offer', 'New rent offer from ' . $sender_name, $message, '/pg/' . $property_id);
+        } else {
+            create_notification($conn, $receiver_id, 'message', 'New message from ' . $sender_name, $message, '/pg/' . $property_id);
+        }
+
         echo json_encode(array(
             "success" => true,
             "message" => "Message sent successfully!",

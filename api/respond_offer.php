@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -98,6 +99,10 @@
     }
 
     mysqli_commit($conn);
+
+    // Notify seeker about owner's response
+    $action_label = ucfirst($status_text);
+    create_notification($conn, (int)$offer['sender_id'], 'offer', 'Owner ' . $status_text . ' your rent offer', 'Your offer of ₹' . number_format($offer['offer_amount']) . '/month was ' . $status_text, '/pg/' . $offer['property_id']);
 
     echo json_encode(array("success" => true, "message" => "Offer successfully " . $status_text . "!"));
     mysqli_close($conn);

@@ -292,11 +292,9 @@
         <div class="row">
             <div class="profile-picture col-md-3">
                 <?php
-                    $profile_img = 'img/man.png';
+                    $profile_img = 'https://api.dicebear.com/7.x/initials/svg?seed=' . urlencode($user['full_name']) . '&backgroundColor=6366f1,8b5cf6,ec4899&radius=50';
                     if (!empty($user['profile_pic'])) {
                         $profile_img = $user['profile_pic'];
-                    } elseif ($user['gender'] === 'female') {
-                        $profile_img = 'img/Female_icon.png';
                     }
                 ?>
                 <img src="<?= htmlspecialchars($profile_img) ?>" class="rounded-circle img-thumbnail shadow-sm" style="width: 100px; height: 100px; object-fit: cover;" alt="Profile Picture" />

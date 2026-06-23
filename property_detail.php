@@ -164,7 +164,7 @@
     <!-- Leaflet.js CSS for Interactive Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-    <link href="css/property_detail.css?v=2" rel="stylesheet" />
+    <link href="css/property_detail.css?v=3" rel="stylesheet" />
 </head>
 
 <body>
@@ -198,6 +198,13 @@
                         array_unshift($property_images, $primary_full_path);
                     }
                 }
+                // Fallback: if glob failed but primary_image is set in DB
+                if (empty($property_images) && !empty($property['primary_image'])) {
+                    $fallback_path = "img/properties/".$property['property_id']."/".$property['primary_image'];
+                    if (file_exists($fallback_path)) {
+                        $property_images = [$fallback_path];
+                    }
+                }
                 if (empty($property_images)) {
                     $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"><rect width="100%" height="100%" fill="#f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#94a3b8">No Image Available</text></svg>';
                     $property_images = ['data:image/svg+xml;base64,' . base64_encode($svg)];
@@ -214,7 +221,7 @@
             foreach($property_images as $index => $property_image) {
             ?>
             <div class="carousel-item <?= $index == 0? "active":"" ?>">
-                <img class="d-block w-100" src="<?= htmlspecialchars($property_image) ?>" alt="Slide <?= $index + 1 ?>" <?= $index > 0 ? 'loading="lazy"' : '' ?>>
+                <img class="d-block w-100" src="<?= htmlspecialchars($property_image) ?>" alt="<?= htmlspecialchars($property['property_name']) ?> - Image <?= $index + 1 ?>" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjFmNWY5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjIwIiBmaWxsPSIjOTRhM2I4Ij5JbWFnZSBOb3QgQXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';">
             </div>
             <?php
                 }
@@ -228,6 +235,10 @@
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="sr-only">Next</span>
         </a>
+        <!-- Photo count overlay badge -->
+        <div class="carousel-photo-count-badge" id="carousel-photo-count-badge" title="Click any photo to view fullscreen">
+            <i class="fas fa-images mr-1"></i><span id="carousel-photo-count"></span>
+        </div>
     </div>
 
     <div class="property-summary page-container">
@@ -286,20 +297,20 @@
             <div class="property-address"><?= htmlspecialchars($property['address'])?></div>
             <div class="property-gender">
                 <?php
-                    if($property['gender'] == "male") {
-                ?>
-                    <img src="img/male.png" alt="Male Only" />
-                <?php
-                    } elseif ($property['gender'] == "female") {
-                ?>
-                    <img src="img/female.png" alt="Female Only" />
-                <?php
+                    $gender_icon = 'fa-building';
+                    $gender_label = 'All genders';
+                    if ($property['gender'] === 'male') {
+                        $gender_icon = 'fa-male';
+                        $gender_label = 'Male only';
+                    } elseif ($property['gender'] === 'female') {
+                        $gender_icon = 'fa-female';
+                        $gender_label = 'Female only';
                     } else {
-                ?>
-                    <img src="img/unisex.png" alt="Unisex" />
-                <?php
+                        $gender_icon = 'fa-users';
+                        $gender_label = 'Unisex';
                     }
                 ?>
+                    <i class="fas <?= $gender_icon ?> property-gender-icon" title="<?= $gender_label ?>" aria-label="<?= $gender_label ?>"></i>
             </div>
         </div>
         <div class="row no-gutters">
@@ -313,8 +324,14 @@
                 <?php } elseif ($is_booked) { ?>
                     <button class="btn btn-success btn-block" disabled>Booked</button>
                 <?php } else { ?>
-                    <a href="#" id="book-now-btn" class="btn btn-primary btn-block">Book Now</a>
+                    <a href="#" id="book-now-btn" class="btn btn-primary btn-block" role="button" aria-label="Book this property">Book Now</a>
                 <?php } ?>
+                <button type="button" class="btn btn-outline-primary btn-block mt-2" id="share-property-btn" aria-label="Share this property"
+                    data-property-name="<?= htmlspecialchars($property['property_name']) ?>"
+                    data-city-name="<?= htmlspecialchars($property['city_name']) ?>"
+                    data-rent="<?= $property['rent'] ?>">
+                    <i class="fas fa-share-alt mr-1"></i>Share
+                </button>
             </div>
         </div>
     </div>
@@ -479,6 +496,7 @@
                             data-contact-profile-pic=""
                             data-property-id="<?= $property['property_id'] ?>"
                             data-property-name="<?= htmlspecialchars($property['property_name']) ?>"
+                            data-rent="<?= (int)$property['rent'] ?>"
                             style="border-radius: 20px;">
                         <i class="fas fa-comments mr-1"></i>Chat with Owner
                     </button>
@@ -625,14 +643,13 @@
                 <div class="review-block mb-4 p-3 bg-light rounded shadow-sm border d-flex">
                     <div class="review-avatar-container mr-3 text-center" style="flex-shrink: 0;">
                         <?php
-                            $review_img = 'img/man.png';
+                            $review_seed = urlencode($review['user_name']);
+                            $review_img = 'https://api.dicebear.com/7.x/initials/svg?seed=' . $review_seed . '&backgroundColor=6366f1,8b5cf6,ec4899&radius=50';
                             if (!empty($review['profile_pic'])) {
-                                $review_img = $review['profile_pic'];
-                            } elseif ($review['gender'] === 'female') {
-                                $review_img = 'img/Female_icon.png';
+                                $review_img = htmlspecialchars($review['profile_pic']);
                             }
                         ?>
-                        <img src="<?= htmlspecialchars($review_img) ?>" class="rounded-circle img-thumbnail" style="width: 45px; height: 45px; object-fit: cover;" alt="User Avatar" />
+                        <img src="<?= $review_img ?>" class="rounded-circle img-thumbnail" style="width: 45px; height: 45px; object-fit: cover;" alt="<?= htmlspecialchars($review['user_name']) ?>'s avatar" />
                     </div>
                     <div class="review-details-container flex-grow-1">
                         <div class="d-flex justify-content-between mb-2">
@@ -687,21 +704,19 @@
 
     <div class="property-testimonials page-container border-top pt-5">
         <h1>What people say</h1>
-        <?php 
+        <?php if (empty($testimonials)) { ?>
+            <div class="testimonials-empty-state">
+                <i class="far fa-comment-dots"></i>
+                <p>No testimonials yet for this property. Be the first to share your experience!</p>
+            </div>
+        <?php } else {
             foreach ($testimonials as $testimonial) {
-                $avatar = 'img/man.png';
-                $name_lower = strtolower($testimonial['user_name']);
-                if (strpos($name_lower, 'mira') !== false ||
-                    strpos($name_lower, 'zoya') !== false ||
-                    strpos($name_lower, 'farah') !== false ||
-                    strpos($name_lower, 'meghna') !== false ||
-                    strpos($name_lower, 'alice') !== false) {
-                    $avatar = 'img/Female_icon.png';
-                }
+                $testimonial_seed = urlencode($testimonial['user_name']);
+                $avatar = 'https://api.dicebear.com/7.x/initials/svg?seed=' . $testimonial_seed . '&backgroundColor=6366f1,8b5cf6,ec4899&radius=50';
         ?>
         <div class="testimonial-block">
             <div class="testimonial-image-container">
-                <img class="testimonial-img" src="<?= htmlspecialchars($avatar) ?>" alt="Testimonial user">
+                <img class="testimonial-img" src="<?= htmlspecialchars($avatar) ?>" alt="<?= htmlspecialchars($testimonial['user_name']) ?>'s avatar">
             </div>
             <div class="testimonial-text">
                 <i class="fa fa-quote-left" aria-hidden="true"></i>
@@ -711,7 +726,7 @@
         </div>
         <?php
             }
-        ?>
+        } ?>
     </div>
 
     <?php
@@ -720,10 +735,121 @@
         include "includes/footer.php";
     ?>
 
+    <!-- Share Property Modal -->
+    <div class="modal fade" id="share-modal" tabindex="-1" role="dialog" aria-labelledby="share-modal-heading" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="share-modal-heading"><i class="fas fa-share-alt mr-2"></i>Share Property</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted text-center mb-3" id="share-property-title" style="font-weight: 600; font-size: 15px;"></p>
+                    <div class="share-options-grid">
+                        <a href="#" class="share-option-btn whatsapp" id="share-whatsapp" target="_blank" rel="noopener">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        <a href="#" class="share-option-btn email" id="share-email">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email</span>
+                        </a>
+                        <a href="#" class="share-option-btn facebook" id="share-facebook" target="_blank" rel="noopener">
+                            <i class="fab fa-facebook-f"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="#" class="share-option-btn twitter" id="share-twitter" target="_blank" rel="noopener">
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm px-4" id="share-copy-link">
+                            <i class="fas fa-link mr-1"></i>Copy Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Lightbox -->
+    <div class="image-lightbox" id="image-lightbox" role="dialog" aria-modal="true" aria-label="Property image viewer">
+        <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">&times;</button>
+        <button class="lightbox-nav lightbox-prev" id="lightbox-prev" aria-label="Previous image"><i class="fas fa-chevron-left"></i></button>
+        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Property image" id="lightbox-img" tabindex="0">
+        <button class="lightbox-nav lightbox-next" id="lightbox-next" aria-label="Next image"><i class="fas fa-chevron-right"></i></button>
+        <div class="lightbox-counter" id="lightbox-counter"></div>
+        <!-- Lightbox action toolbar -->
+        <div class="lightbox-toolbar" id="lightbox-toolbar">
+            <a class="lightbox-toolbar-btn" id="lightbox-download-btn" href="#" download aria-label="Download image" title="Download image">
+                <i class="fas fa-download"></i>
+                <span>Download</span>
+            </a>
+            <button class="lightbox-toolbar-btn" id="lightbox-share-btn" aria-label="Share image" title="Share image">
+                <i class="fas fa-share-alt"></i>
+                <span>Share</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Leaflet.js Interactive Maps JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <script type="text/javascript" src="js/property_detail.js"></script>
+    <script type="text/javascript" src="js/property_detail.js?v=3"></script>
+
+    <script>
+    // Share Property Modal
+    (function() {
+        var shareBtn = document.getElementById('share-property-btn');
+        if (!shareBtn) return;
+
+        var propName = shareBtn.getAttribute('data-property-name');
+        var cityName = shareBtn.getAttribute('data-city-name');
+        var rent = parseInt(shareBtn.getAttribute('data-rent')).toLocaleString('en-IN');
+        var shareUrl = window.location.href;
+        var shareText = 'Check out ' + propName + ' in ' + cityName + ' on PGLife - Rent: \u20B9' + rent + '/month';
+
+        shareBtn.addEventListener('click', function() {
+            // Use native Web Share API on mobile if available
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (navigator.share && isMobile) {
+                navigator.share({ title: propName + ' | PGLife', text: shareText, url: shareUrl }).catch(function() {});
+                return;
+            }
+
+            // Fallback: show share modal
+            document.getElementById('share-property-title').textContent = propName + ' in ' + cityName;
+            document.getElementById('share-whatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + shareUrl);
+            document.getElementById('share-email').href = 'mailto:?subject=' + encodeURIComponent(propName + ' | PGLife') + '&body=' + encodeURIComponent(shareText + '\n\n' + shareUrl);
+            document.getElementById('share-facebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+            document.getElementById('share-twitter').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl);
+
+            window.$('#share-modal').modal('show');
+        });
+
+        // Copy Link button
+        var copyBtn = document.getElementById('share-copy-link');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', function() {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(shareUrl).then(function() {
+                        showToast('Link copied to clipboard!', 'success');
+                    });
+                } else {
+                    var ta = document.createElement('textarea');
+                    ta.value = shareUrl;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    showToast('Link copied to clipboard!', 'success');
+                }
+            });
+        }
+    })();
+
+    </script>
 </body>
 
 </html>

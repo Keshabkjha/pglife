@@ -18,8 +18,16 @@ window.addEventListener("load", function () {
             // Initiate the request
             XHR.send("property_id=" + encodeURIComponent(property_id) + "&csrf_token=" + encodeURIComponent(window.csrf_token));
 
-            document.getElementById("loading").style.display = 'block';
+            showLoading();
             event.preventDefault();
+        });
+
+        // Keyboard accessibility for heart icon
+        element.addEventListener("keydown", function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                this.click();
+            }
         });
     });
 
@@ -153,7 +161,7 @@ function sortProperties(descending) {
 }
 
 var toggle_interested_success = function (event) {
-    document.getElementById("loading").style.display = 'none';
+    hideLoading();
 
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
@@ -175,7 +183,80 @@ var toggle_interested_success = function (event) {
                 interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) - 1;
             }
         }
-    } else if (!response.success && !response.is_logged_in) {
+    } else if (!response.success && response.is_logged_in === false) {
         window.$("#login-modal").modal("show");
+    } else {
+        showToast(response.message || 'You are not allowed to perform this action.', 'warning');
     }
 };
+
+// ── Share PG Card in List View ──
+(function() {
+    var activeShareUrl = '';
+    
+    document.addEventListener('click', function (event) {
+        var btn = event.target.closest('.share-property-btn-list');
+        if (!btn) return;
+
+        var propId = btn.getAttribute('data-property-id');
+        var propName = btn.getAttribute('data-property-name');
+        var cityName = btn.getAttribute('data-city-name');
+        var rent = parseInt(btn.getAttribute('data-rent')).toLocaleString('en-IN');
+        
+        var shareUrl = window.location.origin + '/pg/' + propId;
+        var shareText = 'Check out ' + propName + ' in ' + cityName + ' on PGLife - Rent: \u20B9' + rent + '/month';
+        
+        // Native Web Share (mobile only)
+        var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (navigator.share && isMobile) {
+            navigator.share({
+                title: propName + ' | PGLife',
+                text: shareText,
+                url: shareUrl
+            }).catch(function() {});
+            return;
+        }
+        
+        // Fallback Share Modal
+        activeShareUrl = shareUrl;
+        var titleEl = document.getElementById('share-property-title');
+        if (titleEl) titleEl.textContent = propName + ' in ' + cityName;
+        
+        var waEl = document.getElementById('share-whatsapp');
+        if (waEl) waEl.href = 'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + shareUrl);
+        
+        var mailEl = document.getElementById('share-email');
+        if (mailEl) mailEl.href = 'mailto:?subject=' + encodeURIComponent(propName + ' | PGLife') + '&body=' + encodeURIComponent(shareText + '\n\n' + shareUrl);
+        
+        var fbEl = document.getElementById('share-facebook');
+        if (fbEl) fbEl.href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl);
+        
+        var twEl = document.getElementById('share-twitter');
+        if (twEl) twEl.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText) + '&url=' + encodeURIComponent(shareUrl);
+        
+        try {
+            window.$('#share-modal').modal('show');
+        } catch (e) {}
+    });
+
+    // Copy Link button handler
+    document.addEventListener('click', function (event) {
+        var copyBtn = event.target.closest('#share-copy-link');
+        if (!copyBtn || !activeShareUrl) return;
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(activeShareUrl).then(function() {
+                showToast('Link copied to clipboard!', 'success');
+            });
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = activeShareUrl;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Link copied to clipboard!', 'success');
+        }
+    });
+})();
+

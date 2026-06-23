@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -21,6 +22,22 @@
         return;
     }
 
+    // Get owner details and property name before deletion
+    $sql_owner = "SELECT owner_id, name FROM properties WHERE id = ?";
+    $stmt_owner = mysqli_prepare($conn, $sql_owner);
+    $owner_id_notif = 0;
+    $prop_name = '';
+    if ($stmt_owner) {
+        mysqli_stmt_bind_param($stmt_owner, "i", $property_id);
+        mysqli_stmt_execute($stmt_owner);
+        $res_owner = mysqli_stmt_get_result($stmt_owner);
+        if ($row_owner = mysqli_fetch_assoc($res_owner)) {
+            $owner_id_notif = (int)$row_owner['owner_id'];
+            $prop_name = $row_owner['name'];
+        }
+        mysqli_stmt_close($stmt_owner);
+    }
+
     $sql = "DELETE FROM bookings WHERE user_id = ? AND property_id = ?";
     $stmt = mysqli_prepare($conn, $sql);
     if (!$stmt) {
@@ -38,6 +55,11 @@
     }
 
     mysqli_stmt_close($stmt);
+
+    if ($owner_id_notif > 0) {
+        $seeker_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : 'A seeker';
+        create_notification($conn, $owner_id_notif, 'booking', $seeker_name . ' cancelled booking', $seeker_name . ' cancelled booking for ' . $prop_name, '/pg/' . $property_id);
+    }
 
     echo json_encode(array("success" => true, "message" => "Booking successfully cancelled.", "property_id" => $property_id));
     mysqli_close($conn);

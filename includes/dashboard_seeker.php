@@ -120,6 +120,7 @@
                                  data-contact-profile-pic="<?= htmlspecialchars($property['owner_profile_pic'] ?? '') ?>"
                                  data-property-id="<?= $property['id'] ?>"
                                  data-property-name="<?= htmlspecialchars($property['name']) ?>"
+                                 data-rent="<?= (int)$property['rent'] ?>"
                                  style="width: auto; float: none; font-size: 13px; height: 36px;">
                              <i class="fas fa-comments mr-1"></i>Chat with Owner
                          </button>
@@ -238,6 +239,7 @@
                                 data-contact-profile-pic="<?= htmlspecialchars($property['owner_profile_pic'] ?? '') ?>"
                                 data-property-id="<?= $property['id'] ?>"
                                 data-property-name="<?= htmlspecialchars($property['name']) ?>"
+                                data-rent="<?= (int)$property['rent'] ?>"
                                 style="width: auto; float: none; font-size: 13px; height: 36px;">
                             <i class="fas fa-comments mr-1"></i>Chat with Owner
                         </button>

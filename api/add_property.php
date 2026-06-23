@@ -159,11 +159,12 @@
     // Create target directory for property images
     $dest_dir = "../img/properties/" . $new_property_id . "/";
     if (!file_exists($dest_dir)) {
-        if (!mkdir($dest_dir, 0755, true)) {
+        if (!mkdir($dest_dir, 0775, true)) {
             echo json_encode(array("success" => false, "message" => "Property created but failed to create directory for images."));
             return;
         }
     }
+    chmod($dest_dir, 0775);
 
     $primary_image_index = isset($_POST['primary_image_index']) ? (int)$_POST['primary_image_index'] : 0;
 
@@ -189,6 +190,7 @@
             echo json_encode(array("success" => false, "message" => "Property created but failed to save image: " . $orig_name));
             return;
         }
+        chmod($dest_path, 0664);
 
         if ($i === $primary_image_index) {
             $primary_image_filename = $new_filename;

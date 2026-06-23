@@ -154,8 +154,9 @@
         // Save new images
         $dest_dir = "../img/properties/" . $property_id . "/";
         if (!file_exists($dest_dir)) {
-            mkdir($dest_dir, 0755, true);
+            mkdir($dest_dir, 0775, true);
         }
+        chmod($dest_dir, 0775);
         $mime_map = [
             'image/png'  => 'png',
             'image/jpeg' => 'jpg',
@@ -169,6 +170,7 @@
                 $ext = isset($mime_map[$mime_type]) ? $mime_map[$mime_type] : 'jpg';
                 $new_filename = bin2hex(random_bytes(8)) . '.' . $ext;
                 if (move_uploaded_file($files['tmp_name'][$i], $dest_dir . $new_filename)) {
+                    chmod($dest_dir . $new_filename, 0664);
                     if ($i === $new_primary_image_index) {
                         $primary_image = $new_filename;
                     }

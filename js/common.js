@@ -11,6 +11,24 @@
     }
 })();
 
+// Global loading overlay helpers with auto-hide safety timeout
+var _loadingTimeout = null;
+
+function showLoading() {
+    var el = document.getElementById("loading");
+    if (el) el.style.display = "block";
+    if (_loadingTimeout) clearTimeout(_loadingTimeout);
+    _loadingTimeout = setTimeout(function() {
+        hideLoading();
+    }, 10000);
+}
+
+function hideLoading() {
+    var el = document.getElementById("loading");
+    if (el) el.style.display = "none";
+    if (_loadingTimeout) { clearTimeout(_loadingTimeout); _loadingTimeout = null; }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Dark mode toggle (desktop nav)
     var toggle = document.getElementById('dark-mode-toggle');
@@ -72,6 +90,215 @@ document.addEventListener('DOMContentLoaded', function() {
     drawerLinks.forEach(function(link) {
         link.addEventListener('click', closeDrawer);
     });
+
+    // ── Notification System ──
+    var notifBell = document.getElementById('notification-bell');
+    var notifDropdown = document.getElementById('notif-dropdown');
+    var notifCount = document.getElementById('notif-count');
+    var notifList = document.getElementById('notif-list');
+    var markAllBtn = document.getElementById('mark-all-read-btn');
+
+    var notifBellMobile = document.getElementById('notification-bell-mobile');
+    var notifDropdownMobile = document.getElementById('notif-dropdown-mobile');
+    var notifCountMobile = document.getElementById('notif-count-mobile');
+    var notifListMobile = document.getElementById('notif-list-mobile');
+    var markAllBtnMobile = document.getElementById('mark-all-read-btn-mobile');
+
+    if (notifBell || notifBellMobile) {
+        var lastNotifCount = 0;
+
+        function fetchNotifications() {
+            $.ajax({
+                url: 'api/get_notifications.php',
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    if (!res.success) return;
+
+                    // Update badges
+                    var countText = res.unread_count > 99 ? '99+' : res.unread_count;
+                    
+                    if (notifCount) {
+                        if (res.unread_count > 0) {
+                            notifCount.textContent = countText;
+                            notifCount.classList.remove('d-none');
+                        } else {
+                            notifCount.classList.add('d-none');
+                        }
+                    }
+
+                    if (notifCountMobile) {
+                        if (res.unread_count > 0) {
+                            notifCountMobile.textContent = countText;
+                            notifCountMobile.classList.remove('d-none');
+                        } else {
+                            notifCountMobile.classList.add('d-none');
+                        }
+                    }
+
+                    // Play subtle sound on new notification
+                    if (res.unread_count > lastNotifCount && lastNotifCount >= 0) {
+                        try {
+                            var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            var osc = audioCtx.createOscillator();
+                            var gain = audioCtx.createGain();
+                            osc.connect(gain);
+                            gain.connect(audioCtx.destination);
+                            osc.frequency.value = 800;
+                            gain.gain.value = 0.08;
+                            osc.start();
+                            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                            osc.stop(audioCtx.currentTime + 0.3);
+                        } catch(e) {}
+                    }
+                    lastNotifCount = res.unread_count;
+
+                    // Render notification list
+                    renderList(notifList, res.data);
+                    renderList(notifListMobile, res.data);
+                },
+                error: function() {}
+            });
+        }
+
+        function renderList(listEl, data) {
+            if (!listEl) return;
+            if (data.length > 0) {
+                listEl.innerHTML = '';
+                data.forEach(function(notif) {
+                    var iconMap = {
+                        'message': 'fa-comments',
+                        'booking': 'fa-calendar-check',
+                        'interest': 'fa-heart',
+                        'offer': 'fa-handshake',
+                        'review': 'fa-star'
+                    };
+                    var icon = iconMap[notif.type] || 'fa-bell';
+                    var unreadClass = parseInt(notif.is_read) === 0 ? 'notif-unread' : '';
+
+                    var item = document.createElement('a');
+                    item.className = 'notif-item ' + unreadClass;
+                    item.href = notif.link || '#';
+                    item.setAttribute('data-notif-id', notif.id);
+                    item.innerHTML = '<i class="fas ' + icon + ' notif-icon"></i>' +
+                        '<div class="notif-content">' +
+                            '<div class="notif-title">' + escapeHtmlSimple(notif.title) + '</div>' +
+                            '<div class="notif-body">' + escapeHtmlSimple(notif.body) + '</div>' +
+                            '<div class="notif-time">' + timeAgo(notif.created_at) + '</div>' +
+                        '</div>';
+
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        markNotificationRead(notif.id);
+                        if (notif.link && notif.link !== '#') {
+                            navigateTo(notif.link);
+                        }
+                    });
+
+                    listEl.appendChild(item);
+                });
+            } else {
+                listEl.innerHTML = '<div class="notif-empty text-center py-3 text-muted" style="font-size: 13px;">' +
+                    '<i class="far fa-bell-slash mb-2" style="font-size: 24px; opacity: 0.4; display: block;"></i>' +
+                    'No notifications yet' +
+                '</div>';
+            }
+        }
+
+        function markNotificationRead(notifId) {
+            $.ajax({
+                url: 'api/mark_notification_read.php',
+                type: 'POST',
+                data: { notification_id: notifId },
+                dataType: 'json',
+                success: function() { fetchNotifications(); }
+            });
+        }
+
+        function timeAgo(dateStr) {
+            if (!dateStr) return '';
+            var now = new Date();
+            var then = new Date(dateStr.replace(/-/g, '/'));
+            var diff = Math.floor((now - then) / 1000);
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        function escapeHtmlSimple(text) {
+            if (!text) return '';
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Toggle dropdown on desktop bell click
+        if (notifBell) {
+            notifBell.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (notifDropdownMobile) notifDropdownMobile.classList.add('d-none');
+                notifDropdown.classList.toggle('d-none');
+                if (!notifDropdown.classList.contains('d-none')) {
+                    fetchNotifications();
+                }
+            });
+        }
+
+        // Toggle dropdown on mobile bell click
+        if (notifBellMobile) {
+            notifBellMobile.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (notifDropdown) notifDropdown.classList.add('d-none');
+                notifDropdownMobile.classList.toggle('d-none');
+                if (!notifDropdownMobile.classList.contains('d-none')) {
+                    fetchNotifications();
+                }
+            });
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== notifBell) {
+                notifDropdown.classList.add('d-none');
+            }
+            if (notifDropdownMobile && !notifDropdownMobile.contains(e.target) && e.target !== notifBellMobile) {
+                notifDropdownMobile.classList.add('d-none');
+            }
+        });
+
+        // Mark all read (desktop)
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: 'api/mark_notification_read.php',
+                    type: 'POST',
+                    data: { all: '1' },
+                    dataType: 'json',
+                    success: function() { fetchNotifications(); }
+                });
+            });
+        }
+
+        // Mark all read (mobile)
+        if (markAllBtnMobile) {
+            markAllBtnMobile.addEventListener('click', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: 'api/mark_notification_read.php',
+                    type: 'POST',
+                    data: { all: '1' },
+                    dataType: 'json',
+                    success: function() { fetchNotifications(); }
+                });
+            });
+        }
+
+        // Poll every 15 seconds
+        fetchNotifications();
+        setInterval(fetchNotifications, 15000);
+    }
 });
 
 // Toast notifications
@@ -125,14 +352,14 @@ function navigateTo(url) {
     window._navigating = true;
 
     var el = document.body;
-    el.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+    el.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
     el.style.opacity = '0';
     el.style.transform = 'translateY(-8px)';
     el.style.pointerEvents = 'none';
 
     setTimeout(function() {
         window.location.href = url;
-    }, 270);
+    }, 160);
 }
 
 // Intercept link clicks for smooth transitions (skip modals, external, anchors)
@@ -227,7 +454,7 @@ window.addEventListener("load", function () {
             XHR.open("POST", "api/signup_submit.php");
             XHR.send(form_data);
 
-            document.getElementById("loading").style.display = 'block';
+            showLoading();
             event.preventDefault();
         });
     }
@@ -244,7 +471,7 @@ window.addEventListener("load", function () {
             XHR.open("POST", "api/signup_verify.php");
             XHR.send(form_data);
 
-            document.getElementById("loading").style.display = 'block';
+            showLoading();
             event.preventDefault();
         });
     }
@@ -261,7 +488,7 @@ window.addEventListener("load", function () {
             XHR.open("POST", "api/login_submit.php");
             XHR.send(form_data);
 
-            document.getElementById("loading").style.display = 'block';
+            showLoading();
             event.preventDefault();
         });
     }
@@ -274,7 +501,7 @@ window.addEventListener("load", function () {
             var form_data = new FormData(forgot_form);
 
             XHR.addEventListener("load", function(e) {
-                document.getElementById("loading").style.display = 'none';
+                hideLoading();
                 try {
                     var response = JSON.parse(e.target.responseText);
                     if (response.success) {
@@ -306,7 +533,7 @@ window.addEventListener("load", function () {
             XHR.open("POST", "api/forgot_password.php");
             XHR.send(form_data);
 
-            document.getElementById("loading").style.display = 'block';
+            showLoading();
             event.preventDefault();
         });
     }
@@ -319,7 +546,7 @@ window.addEventListener("load", function () {
             var form_data = new FormData(reset_form);
 
             XHR.addEventListener("load", function(e) {
-                document.getElementById("loading").style.display = 'none';
+                hideLoading();
                 try {
                     var response = JSON.parse(e.target.responseText);
                     if (response.success) {
@@ -347,7 +574,7 @@ window.addEventListener("load", function () {
             XHR.open("POST", "api/reset_password.php");
             XHR.send(form_data);
 
-            document.getElementById("loading").style.display = 'block';
+            showLoading();
             event.preventDefault();
         });
     }
@@ -360,7 +587,7 @@ window.addEventListener("load", function () {
 
 // Form response handlers
 var signup_success = function (event) {
-    document.getElementById("loading").style.display = 'none';
+    hideLoading();
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
         if (response.otp_required) {
@@ -391,7 +618,7 @@ var signup_success = function (event) {
 };
 
 var otp_success = function (event) {
-    document.getElementById("loading").style.display = 'none';
+    hideLoading();
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
         showToast(response.message || 'Account verified! Welcome to PGLife!', 'success');
@@ -402,7 +629,7 @@ var otp_success = function (event) {
 };
 
 var login_success = function (event) {
-    document.getElementById("loading").style.display = 'none';
+    hideLoading();
     var response = JSON.parse(event.target.responseText);
     if (response.success) {
         showToast('Welcome back! Logging you in...', 'success');
@@ -419,6 +646,6 @@ var login_success = function (event) {
 };
 
 var on_error = function (event) {
-    document.getElementById("loading").style.display = 'none';
+    hideLoading();
     showToast('Oops! A network error occurred. Please try again.', 'error');
 };

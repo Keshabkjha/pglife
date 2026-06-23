@@ -3,17 +3,17 @@
     <div id="chat-box-widget">
         <div class="chat-header" id="chat-widget-header">
             <div class="chat-contact-info">
-                <img src="img/man.png" id="chat-widget-avatar" class="chat-avatar" alt="Avatar" />
+                <img src="https://api.dicebear.com/7.x/initials/svg?seed=User&backgroundColor=6366f1,8b5cf6,ec4899&radius=50" id="chat-widget-avatar" class="chat-avatar" alt="Contact Avatar" />
                 <div class="chat-title-text">
                     <div id="chat-widget-contact-name" class="chat-contact-name">Contact Name</div>
                     <div id="chat-widget-property-context" class="chat-property-context">Property Name</div>
                 </div>
             </div>
             <div class="chat-controls">
-                <button type="button" class="chat-control-btn" id="chat-widget-minimize" title="Minimize">
+                <button type="button" class="chat-control-btn" id="chat-widget-minimize" title="Minimize" aria-label="Minimize chat">
                     <i class="fas fa-minus"></i>
                 </button>
-                <button type="button" class="chat-control-btn" id="chat-widget-close" title="Close">
+                <button type="button" class="chat-control-btn" id="chat-widget-close" title="Close" aria-label="Close chat">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -39,11 +39,14 @@
 
         <!-- Bargain Rent Offer Input Bar -->
         <div class="chat-offer-input-container" id="chat-widget-offer-container">
+            <div class="chat-offer-input-header">
+                <i class="fas fa-handshake mr-1"></i>Send your monthly rent offer to the owner
+            </div>
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
                     <span class="input-group-text">₹</span>
                 </div>
-                <input type="number" id="chat-widget-offer-input" class="form-control" placeholder="Enter monthly offer..." min="1" />
+                <input type="number" id="chat-widget-offer-input" class="form-control" placeholder="Enter monthly offer (min ₹1,000)..." min="1000" />
                 <div class="input-group-append">
                     <button class="btn btn-warning font-weight-bold text-dark" id="chat-widget-submit-offer" type="button">Send Offer</button>
                 </div>
@@ -56,12 +59,15 @@
             <input type="hidden" id="chat-widget-property-id" />
             
             <?php if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'owner') { ?>
-                <button type="button" class="chat-action-btn bargain-msg" id="chat-widget-toggle-bargain" title="Bargain Monthly Rent">
+                <button type="button" class="chat-action-btn bargain-msg" id="chat-widget-toggle-bargain" title="Send Rent Offer" aria-label="Send rent offer">
                     <i class="fas fa-handshake"></i>
                 </button>
+                <button type="button" class="chat-action-btn book-now-msg" id="chat-widget-book-now" title="Book this Property" aria-label="Book this property">
+                    <i class="fas fa-calendar-check"></i>
+                </button>
             <?php } ?>
-            
-            <textarea id="chat-widget-input" class="chat-input" placeholder="Type a message..." rows="1" required></textarea>
+
+            <textarea id="chat-widget-input" class="chat-input" placeholder="Type a message..." rows="1" required aria-label="Chat message input"></textarea>
             
             <button type="submit" class="chat-action-btn send-msg" title="Send Message">
                 <i class="fas fa-paper-plane"></i>
@@ -70,9 +76,9 @@
     </div>
 
     <script type="text/javascript">
-        window.csrfToken = "<?= $_SESSION['csrf_token'] ?>";
+        window.csrfToken = "<?= htmlspecialchars($_SESSION['csrf_token']) ?>";
         window.userId = <?= (int)$_SESSION['user_id'] ?>;
-        window.userRole = "<?= $_SESSION['role'] ?? 'seeker' ?>";
+        window.userRole = "<?= htmlspecialchars($_SESSION['role'] ?? 'seeker') ?>";
     </script>
 <?php } ?>
 

@@ -51,7 +51,7 @@
         return;
     }
 
-    // Mark incoming messages as read
+    // Mark incoming messages as read and delivered
     $sql_read = "UPDATE messages SET is_read = 1 
                  WHERE property_id = ? AND sender_id = ? AND receiver_id = ? AND is_read = 0";
     $stmt_read = mysqli_prepare($conn, $sql_read);
@@ -61,22 +61,70 @@
         mysqli_stmt_close($stmt_read);
     }
 
-    // Fetch conversation history
-    $sql_history = "SELECT * FROM messages 
-                    WHERE property_id = ? 
-                      AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)) 
-                    ORDER BY created_at ASC";
-    $stmt_history = mysqli_prepare($conn, $sql_history);
-    if (!$stmt_history) {
-        echo json_encode(array("success" => false, "message" => "Something went wrong!"));
-        return;
+    // Mark messages as delivered
+    $sql_delivered = "UPDATE messages SET delivered_at = NOW() 
+                      WHERE property_id = ? AND sender_id = ? AND receiver_id = ? AND delivered_at IS NULL";
+    $stmt_delivered = mysqli_prepare($conn, $sql_delivered);
+    if ($stmt_delivered) {
+        mysqli_stmt_bind_param($stmt_delivered, "iii", $property_id, $contact_id, $user_id);
+        mysqli_stmt_execute($stmt_delivered);
+        mysqli_stmt_close($stmt_delivered);
     }
-    mysqli_stmt_bind_param($stmt_history, "iiiii", $property_id, $user_id, $contact_id, $contact_id, $user_id);
+
+    // Pagination support
+    $last_message_id = isset($_GET['last_message_id']) ? (int)$_GET['last_message_id'] : 0;
+    $limit = min(200, max(10, isset($_GET['limit']) ? (int)$_GET['limit'] : 50));
+
+    // Fetch conversation history
+    if ($last_message_id > 0) {
+        // Incremental poll: only messages newer than last known
+        $sql_history = "SELECT * FROM messages 
+                        WHERE property_id = ? 
+                          AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))
+                          AND id > ?
+                        ORDER BY created_at ASC";
+        $stmt_history = mysqli_prepare($conn, $sql_history);
+        if (!$stmt_history) {
+            echo json_encode(array("success" => false, "message" => "Something went wrong!"));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_history, "iiiiii", $property_id, $user_id, $contact_id, $contact_id, $user_id, $last_message_id);
+    } else {
+        // Initial load: last N messages (limit is already validated as int)
+        $sql_history = "SELECT * FROM (
+                            SELECT * FROM messages 
+                            WHERE property_id = ? 
+                              AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))
+                            ORDER BY created_at DESC 
+                            LIMIT " . $limit . "
+                        ) sub ORDER BY created_at ASC";
+        $stmt_history = mysqli_prepare($conn, $sql_history);
+        if (!$stmt_history) {
+            echo json_encode(array("success" => false, "message" => "Something went wrong!"));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_history, "iiiii", $property_id, $user_id, $contact_id, $contact_id, $user_id);
+    }
     mysqli_stmt_execute($stmt_history);
     $res_history = mysqli_stmt_get_result($stmt_history);
     $messages = mysqli_fetch_all($res_history, MYSQLI_ASSOC);
+
+    // Filter out soft-deleted messages for the current user
+    $filtered_messages = [];
+    $max_id = 0;
+    foreach ($messages as $msg) {
+        $msg_id = (int)$msg['id'];
+        if ($msg_id > $max_id) $max_id = $msg_id;
+
+        // Skip if current user deleted this message from their view
+        if ((int)$msg['sender_id'] === $user_id && (int)$msg['deleted_by_sender'] === 1) continue;
+        if ((int)$msg['receiver_id'] === $user_id && (int)$msg['deleted_by_receiver'] === 1) continue;
+
+        $filtered_messages[] = $msg;
+    }
+
     mysqli_stmt_close($stmt_history);
 
-    echo json_encode(array("success" => true, "data" => $messages));
+    echo json_encode(array("success" => true, "data" => $filtered_messages, "max_id" => $max_id));
     mysqli_close($conn);
 ?>

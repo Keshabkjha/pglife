@@ -303,3 +303,24 @@ body.dark-mode .room-manager-row input:focus {
     border-color: #818CF8;
 }
 
+/* Dark mode review items text */
+body.dark-mode .review-item p,
+body.dark-mode .review-item .text-muted,
+body.dark-mode .review-item .text-secondary {
+    color: #94A3B8 !important;
+}
+
+body.dark-mode .review-item strong,
+body.dark-mode .review-item .font-weight-bold,
+body.dark-mode .review-item .text-dark {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .review-item.bg-light {
+    background-color: #1E293B !important;
+}
+
+body.dark-mode .review-item .border {
+    border-color: #334155 !important;
+}
+

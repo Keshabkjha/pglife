@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("notify.php");
     header('Content-Type: application/json; charset=utf-8');
 
     // 1. Verify CSRF Token
@@ -54,6 +55,22 @@
         return;
     }
 
+    // Get owner details and property name to notify
+    $sql_owner = "SELECT owner_id, name FROM properties WHERE id = ?";
+    $stmt_owner = mysqli_prepare($conn, $sql_owner);
+    $owner_id_notif = 0;
+    $prop_name = '';
+    if ($stmt_owner) {
+        mysqli_stmt_bind_param($stmt_owner, "i", $property_id);
+        mysqli_stmt_execute($stmt_owner);
+        $res_owner = mysqli_stmt_get_result($stmt_owner);
+        if ($row_owner = mysqli_fetch_assoc($res_owner)) {
+            $owner_id_notif = (int)$row_owner['owner_id'];
+            $prop_name = $row_owner['name'];
+        }
+        mysqli_stmt_close($stmt_owner);
+    }
+
     // 5. Insert Ticket into Database
     $sql_insert = "INSERT INTO maintenance_tickets (property_id, user_id, title, description, status) VALUES (?, ?, ?, ?, 'open')";
     $stmt_insert = mysqli_prepare($conn, $sql_insert);
@@ -66,6 +83,10 @@
     mysqli_stmt_close($stmt_insert);
 
     if ($result_insert) {
+        if ($owner_id_notif > 0) {
+            $seeker_name = isset($_SESSION['full_name']) ? $_SESSION['full_name'] : 'A tenant';
+            create_notification($conn, $owner_id_notif, 'message', 'New maintenance ticket', $seeker_name . ' filed a ticket: ' . $title . ' for ' . $prop_name, '/dashboard');
+        }
         echo json_encode(array("success" => true, "message" => "Complaint logged successfully! The property owner will review it shortly."));
     } else {
         echo json_encode(array("success" => false, "message" => "Failed to log complaint. Database error."));

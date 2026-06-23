@@ -3,6 +3,8 @@ $(document).ready(function () {
     let conversationsInterval = null;
     let activeContactId = null;
     let activePropertyId = null;
+    let activePropertyRent = 0;
+    let lastKnownMessageId = 0;
 
     // Seeker templates
     const seekerReplies = [
@@ -29,13 +31,54 @@ $(document).ready(function () {
         const contactPic = $(this).data('contact-profile-pic') || "";
         const propertyId = $(this).data('property-id');
         const propertyName = $(this).data('property-name') || "Property Details";
+        const propertyRent = parseInt($(this).data('rent')) || 0;
 
-        openChatBox(contactId, contactName, contactGender, contactPic, propertyId, propertyName);
+        openChatBox(contactId, contactName, contactGender, contactPic, propertyId, propertyName, propertyRent);
     });
 
     // Close Button handler
     $('#chat-widget-close').click(function () {
         closeChatBox();
+    });
+
+    // Chat Book Now handler
+    $(document).on('click', '#chat-widget-book-now', function () {
+        if (!activePropertyId) return;
+
+        $.ajax({
+            url: 'api/book_property.php',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                property_id: activePropertyId,
+                csrf_token: window.csrfToken
+            },
+            success: function (res) {
+                if (res.success) {
+                    showToast(res.message || 'Property booked successfully!', 'success');
+                    // Send system message in chat
+                    appendMessageBubble({
+                        sender_id: window.userId,
+                        message: 'Property booked successfully!',
+                        offer_status: 0,
+                        offer_amount: null,
+                        created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                        is_read: 0,
+                        id: Date.now()
+                    }, true);
+                    scrollChatToBottom();
+                    // Disable the button
+                    $('#chat-widget-book-now').prop('disabled', true).css('opacity', 0.5);
+                } else if (res.is_logged_in === false) {
+                    window.$('#login-modal').modal('show');
+                } else {
+                    showToast(res.message || 'Booking failed.', 'error');
+                }
+            },
+            error: function () {
+                showToast('Network error. Please try again.', 'error');
+            }
+        });
     });
 
     // Minimize Button handler
@@ -54,11 +97,16 @@ $(document).ready(function () {
     // Submit Offer button handler
     $('#chat-widget-submit-offer').click(function () {
         const amount = parseInt($('#chat-widget-offer-input').val());
-        if (isNaN(amount) || amount <= 0) {
-            alert("Please enter a valid bargaining rent amount (positive number).");
+        if (isNaN(amount) || amount < 1000) {
+            showToast('Minimum offer amount is ₹1,000.', 'warning');
             return;
         }
-
+        const maxOffer = activePropertyRent > 0 ? activePropertyRent * 2 : 500000;
+        if (amount > maxOffer) {
+            const formattedMax = maxOffer.toLocaleString('en-IN');
+            showToast('Offer cannot exceed ₹' + formattedMax + ' (2× the listing rent).', 'warning');
+            return;
+        }
         sendChatOffer(amount);
     });
 
@@ -90,10 +138,94 @@ $(document).ready(function () {
         respondToOffer(messageId, action);
     });
 
+    // Message Delete handler
+    $(document).on('click', '.chat-delete-btn', function (e) {
+        e.stopPropagation();
+        const messageId = $(this).data('message-id');
+        if (!messageId) return;
+
+        $.ajax({
+            url: 'api/delete_message.php',
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                message_id: messageId,
+                csrf_token: window.csrfToken
+            },
+            success: function (res) {
+                if (res.success) {
+                    // Replace bubble content with "deleted" placeholder
+                    var row = $('.chat-message-row[data-msg-id="' + messageId + '"]');
+                    row.find('.chat-bubble').html('<span class="chat-message-deleted"><i class="fas fa-trash-alt mr-1"></i>Message deleted</span>');
+                    row.find('.chat-delete-btn').remove();
+                } else {
+                    showToast(res.message || 'Failed to delete message.', 'error');
+                }
+            },
+            error: function () {
+                showToast('Network error.', 'error');
+            }
+        });
+    });
+
+    // ── Typing Indicator ──
+    let typingTimeout = null;
+    let lastTypingSent = 0;
+
+    $('#chat-widget-input').on('input', function () {
+        // Debounce: send typing status every 1.5s
+        var now = Date.now();
+        if (now - lastTypingSent > 1500) {
+            sendTypingStatus(1);
+            lastTypingSent = now;
+        }
+        // Clear previous stop-typing timeout
+        if (typingTimeout) clearTimeout(typingTimeout);
+        // Stop typing after 3s of inactivity
+        typingTimeout = setTimeout(function () {
+            sendTypingStatus(0);
+            lastTypingSent = 0;
+        }, 3000);
+    });
+
+    function sendTypingStatus(isTyping) {
+        if (!activeContactId || !activePropertyId) return;
+        $.ajax({
+            url: 'api/typing_status.php',
+            type: 'POST',
+            data: {
+                contact_id: activeContactId,
+                property_id: activePropertyId,
+                is_typing: isTyping
+            }
+        });
+    }
+
+    function checkTypingStatus() {
+        if (!activeContactId || !activePropertyId) return;
+        $.ajax({
+            url: 'api/typing_status.php',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                contact_id: activeContactId,
+                property_id: activePropertyId
+            },
+            success: function (res) {
+                if (res.success && res.is_typing) {
+                    $('#chat-widget-typing').addClass('active');
+                } else {
+                    $('#chat-widget-typing').removeClass('active');
+                }
+            }
+        });
+    }
+
     // Open Chat Box Function
-    function openChatBox(contactId, contactName, contactGender, contactPic, propertyId, propertyName) {
+    function openChatBox(contactId, contactName, contactGender, contactPic, propertyId, propertyName, propertyRent) {
         activeContactId = contactId;
         activePropertyId = propertyId;
+        activePropertyRent = propertyRent || 0;
 
         // Set receiver/property hidden fields
         $('#chat-widget-receiver-id').val(contactId);
@@ -103,12 +235,10 @@ $(document).ready(function () {
         $('#chat-widget-contact-name').text(contactName);
         $('#chat-widget-property-context').text(propertyName).attr('title', propertyName);
 
-        // Resolve profile pic avatar
-        let avatarSrc = 'img/man.png';
+        // Resolve profile pic avatar using DiceBear API
+        let avatarSrc = 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(contactName) + '&backgroundColor=6366f1,8b5cf6,ec4899&radius=50';
         if (contactPic) {
             avatarSrc = contactPic;
-        } else if (contactGender === 'female') {
-            avatarSrc = 'img/Female_icon.png';
         }
         $('#chat-widget-avatar').attr('src', avatarSrc);
 
@@ -116,6 +246,7 @@ $(document).ready(function () {
         $('#chat-widget-input').val('').css('height', 'auto');
         $('#chat-widget-offer-input').val('');
         $('#chat-widget-offer-container').hide();
+        lastKnownMessageId = 0;
         $('#chat-widget-messages').html('<div class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2"></i>Loading history...</div>');
 
         // Show chat box widget & ensure not minimized
@@ -127,15 +258,29 @@ $(document).ready(function () {
 
         // Fetch messages and start polling
         fetchChatMessages(true);
+
+        // Mark messages as delivered when opening chat
+        $.ajax({
+            url: 'api/mark_delivered.php',
+            type: 'POST',
+            data: { contact_id: contactId, property_id: propertyId }
+        });
+
+        // Hide typing indicator on open
+        $('#chat-widget-typing').removeClass('active');
+
         if (chatInterval) clearInterval(chatInterval);
         chatInterval = setInterval(function () {
             fetchChatMessages(false);
+            checkTypingStatus();
         }, 3000);
     }
 
     // Close Chat Box Function
     function closeChatBox() {
         $('#chat-box-widget').removeClass('chat-open');
+        $('#chat-widget-typing').removeClass('active');
+        sendTypingStatus(0);
         if (chatInterval) {
             clearInterval(chatInterval);
             chatInterval = null;
@@ -171,11 +316,15 @@ $(document).ready(function () {
             success: function (res) {
                 if (res.success) {
                     $('#chat-widget-input').val('').css('height', 'auto');
+                    // Stop typing
+                    sendTypingStatus(0);
+                    lastTypingSent = 0;
+                    if (typingTimeout) clearTimeout(typingTimeout);
                     appendMessageBubble(res.data, true);
                     scrollChatToBottom();
                     fetchChatMessages(false);
                 } else {
-                    alert(res.message);
+                    showToast(res.message || 'Failed to send message.', 'error');
                 }
             },
             error: function () {
@@ -206,7 +355,7 @@ $(document).ready(function () {
                     scrollChatToBottom();
                     fetchChatMessages(false);
                 } else {
-                    alert(res.message);
+                    showToast(res.message || 'Failed to send offer.', 'error');
                 }
             },
             error: function () {
@@ -236,7 +385,7 @@ $(document).ready(function () {
                         }, 1000);
                     }
                 } else {
-                    alert(res.message);
+                    showToast(res.message || 'Failed to respond to offer.', 'error');
                 }
             },
             error: function () {
@@ -249,29 +398,49 @@ $(document).ready(function () {
     function fetchChatMessages(isFirstLoad) {
         if (!activeContactId || !activePropertyId) return;
 
+        var ajaxData = {
+            contact_id: activeContactId,
+            property_id: activePropertyId
+        };
+        if (!isFirstLoad && lastKnownMessageId > 0) {
+            ajaxData.last_message_id = lastKnownMessageId;
+        }
+
         $.ajax({
             url: 'api/get_messages.php',
             type: 'GET',
             dataType: 'json',
-            data: {
-                contact_id: activeContactId,
-                property_id: activePropertyId
-            },
+            data: ajaxData,
             success: function (res) {
                 if (res.success) {
                     const messages = res.data;
                     const container = $('#chat-widget-messages');
                     const wasScrolledBottom = isChatScrolledToBottom();
 
-                    container.empty();
-                    if (messages.length === 0) {
-                        container.html('<div class="text-center py-4 text-muted" style="font-size: 12px;"><i class="far fa-comments mr-2" style="font-size: 18px;"></i>Send a message to start bargaining and secure your PG!</div>');
-                        return;
+                    if (isFirstLoad) {
+                        container.empty();
+                        if (messages.length === 0) {
+                            container.html('<div class="text-center py-4 text-muted" style="font-size: 12px;"><i class="far fa-comments mr-2" style="font-size: 18px;"></i>Send a message to start bargaining and secure your PG!</div>');
+                        } else {
+                            messages.forEach(function (msg) {
+                                appendMessageBubble(msg, false);
+                            });
+                        }
+                    } else {
+                        // Incremental: only append new messages
+                        if (messages.length > 0) {
+                            // Remove empty state if present
+                            container.find('.text-center.py-4.text-muted').remove();
+                            messages.forEach(function (msg) {
+                                appendMessageBubble(msg, false);
+                            });
+                        }
                     }
 
-                    messages.forEach(function (msg) {
-                        appendMessageBubble(msg, false);
-                    });
+                    // Update tracking ID
+                    if (res.max_id && res.max_id > lastKnownMessageId) {
+                        lastKnownMessageId = res.max_id;
+                    }
 
                     if (isFirstLoad || wasScrolledBottom) {
                         scrollChatToBottom();
@@ -305,15 +474,23 @@ $(document).ready(function () {
             return;
         }
 
-        // Render checkmarks for read receipt
+        // WhatsApp-style message status: Sent → Delivered → Read
         let checkmarkHTML = '';
         if (isSent) {
             if (parseInt(msg.is_read) === 1) {
-                checkmarkHTML = '<span class="read-receipt read" title="Read"><i class="fas fa-check-double"></i></span>';
+                // Read: blue double check
+                checkmarkHTML = '<span class="msg-status read" title="Read"><i class="fas fa-check-double"></i></span>';
+            } else if (msg.delivered_at) {
+                // Delivered: grey double check
+                checkmarkHTML = '<span class="msg-status delivered" title="Delivered"><i class="fas fa-check-double"></i></span>';
             } else {
-                checkmarkHTML = '<span class="read-receipt unread" title="Delivered"><i class="fas fa-check-double"></i></span>';
+                // Sent: single grey check
+                checkmarkHTML = '<span class="msg-status sent" title="Sent"><i class="fas fa-check"></i></span>';
             }
         }
+
+        // Delete button (visible on hover)
+        let deleteBtnHTML = `<button class="chat-delete-btn" data-message-id="${msg.id}" title="Delete message"><i class="fas fa-trash"></i></button>`;
 
         // Format creation time
         const timeStr = formatMsgTime(msg.created_at);
@@ -358,12 +535,13 @@ $(document).ready(function () {
 
         const rowClass = isSent ? 'sent' : 'received';
         container.append(`
-            <div class="chat-message-row ${rowClass}">
+            <div class="chat-message-row ${rowClass}" data-msg-id="${msg.id}">
                 <div class="chat-bubble shadow-sm">
                     ${bubbleContent}
                     <span class="chat-time-meta">
                         ${timeStr}${checkmarkHTML}
                     </span>
+                    ${deleteBtnHTML}
                 </div>
             </div>
         `);
@@ -454,12 +632,10 @@ $(document).ready(function () {
                             unreadBadge = `<span class="chat-unread-badge ml-2">${thread.unread_count}</span>`;
                         }
 
-                        // Avatar Pic
-                        let avatarSrc = 'img/man.png';
+                        // Avatar Pic using DiceBear API
+                        let avatarSrc = 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(thread.contact_name) + '&backgroundColor=6366f1,8b5cf6,ec4899&radius=50';
                         if (thread.contact_profile_pic) {
                             avatarSrc = thread.contact_profile_pic;
-                        } else if (thread.contact_gender === 'female') {
-                            avatarSrc = 'img/Female_icon.png';
                         }
 
                         tbody.append(`

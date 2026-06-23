@@ -154,7 +154,7 @@
         include "includes/head_links.php";
     ?>
 
-    <link href="css/property_list.css?v=2" rel="stylesheet" />
+    <link href="css/property_list.css?v=3" rel="stylesheet" />
 </head>
 
 <body>
@@ -293,7 +293,7 @@
         ?>
             <div class="property-card property-id-<?= $property['id'] ?> row" data-rent="<?= $property['rent'] ?>" data-gender="<?= $property['gender'] ?>" data-amenities="<?= htmlspecialchars($prop_amenities_str) ?>">
                 <div class="image-container col-md-4">
-                    <img src="<?= htmlspecialchars($image_src) ?>" alt="<?= htmlspecialchars($property['name']) ?>" loading="lazy" />
+                    <img src="<?= htmlspecialchars($image_src) ?>" alt="<?= htmlspecialchars($property['name']) ?> - PG accommodation in <?= htmlspecialchars($city_name) ?>" loading="lazy" decoding="async" width="300" height="200" style="object-fit: cover;" onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjFmNWY5Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTRhM2I4Ij5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';" />
                 </div>
                 <div class="content-container col-md-8">
                     <div class="row no-gutters justify-content-between">
@@ -350,20 +350,17 @@
                         <div class="property-address"><?= htmlspecialchars($property['address']) ?></div>
                         <div class="property-gender">
                             <?php
-                                if ($property['gender'] == "male") {
-                            ?>
-                                <img src="img/male.png" alt="Male Only" />
-                            <?php
-                                } elseif ($property['gender'] == "female") {
-                            ?>
-                                <img src="img/female.png" alt="Female Only" />
-                            <?php
-                                } else {
-                            ?>
-                                <img src="img/unisex.png" alt="Unisex" />
-                            <?php
+                                $gender_icon = 'fa-users';
+                                $gender_label = 'Unisex';
+                                if ($property['gender'] === 'male') {
+                                    $gender_icon = 'fa-male';
+                                    $gender_label = 'Male only';
+                                } elseif ($property['gender'] === 'female') {
+                                    $gender_icon = 'fa-female';
+                                    $gender_label = 'Female only';
                                 }
                             ?>
+                            <i class="fas <?= $gender_icon ?> property-gender-icon" title="<?= $gender_label ?>" aria-label="<?= $gender_label ?>" style="font-size: 24px;"></i>
                         </div>
                     </div>
                     <div class="row no-gutters">
@@ -383,8 +380,17 @@
                             </span>
                             <?php } ?>
                         </div>
-                        <div class="button-container col-6">
-                            <a href="/pg/<?= $property['id'] ?>" class="btn btn-primary">View</a>
+                        <div class="button-container col-6 d-flex align-items-center justify-content-end" style="gap: 8px;">
+                            <button type="button" class="btn btn-outline-primary share-property-btn-list" 
+                                    data-property-id="<?= $property['id'] ?>"
+                                    data-property-name="<?= htmlspecialchars($property['name']) ?>"
+                                    data-city-name="<?= htmlspecialchars($city_name) ?>"
+                                    data-rent="<?= $property['rent'] ?>"
+                                    style="width: 42px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0; float: none; border-radius: 6px; flex-shrink: 0;"
+                                    title="Share this PG">
+                                <i class="fas fa-share-alt" style="margin: 0; font-size: 14px;"></i>
+                            </button>
+                            <a href="/pg/<?= $property['id'] ?>" class="btn btn-primary" style="width: auto; min-width: 80px; padding: 6px 16px; margin: 0; float: none; flex-shrink: 0;">View</a>
                         </div>
                     </div>
                 </div>
@@ -471,13 +477,51 @@
         </div>
     </div>
 
+    <!-- Share Property Modal -->
+    <div class="modal fade" id="share-modal" tabindex="-1" role="dialog" aria-labelledby="share-modal-heading" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="share-modal-heading"><i class="fas fa-share-alt mr-2"></i>Share Property</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted text-center mb-3" id="share-property-title" style="font-weight: 600; font-size: 15px;"></p>
+                    <div class="share-options-grid">
+                        <a href="#" class="share-option-btn whatsapp" id="share-whatsapp" target="_blank" rel="noopener">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        <a href="#" class="share-option-btn email" id="share-email">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email</span>
+                        </a>
+                        <a href="#" class="share-option-btn facebook" id="share-facebook" target="_blank" rel="noopener">
+                            <i class="fab fa-facebook-f"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="#" class="share-option-btn twitter" id="share-twitter" target="_blank" rel="noopener">
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm px-4" id="share-copy-link">
+                            <i class="fas fa-link mr-1"></i>Copy Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php
         include "includes/signup_modal.php";
         include "includes/login_modal.php";
         include "includes/footer.php";
     ?>
 
-    <script type="text/javascript" src="js/property_list.js"></script>
+    <script type="text/javascript" src="js/property_list.js?v=3"></script>
 </body>
 
 </html>
