@@ -305,8 +305,8 @@
                             <td><?= date('d M Y, h:i A', strtotime($payment['payment_date'])) ?></td>
                             <td>
                                 <?php if (!empty($payment['screenshot'])) { ?>
-                                    <a href="<?= htmlspecialchars($payment['screenshot']) ?>" target="_blank" class="btn btn-outline-info btn-xs py-1 px-2 font-weight-bold" style="font-size: 11px;">
-                                        <i class="fas fa-file-image mr-1"></i>View Image
+                                    <a href="api/download_file.php?type=receipt&amp;payment_id=<?= (int)$payment['id'] ?>" target="_blank" class="btn btn-outline-info btn-xs py-1 px-2 font-weight-bold" style="font-size: 11px;">
+                                        <i class="fas fa-file-image mr-1"></i>View Receipt
                                     </a>
                                 <?php } else { ?>
                                     <span class="text-muted font-italic">No Attachment</span>

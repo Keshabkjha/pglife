@@ -1,6 +1,8 @@
 <?php
     session_start();
     require("includes/database_connect.php");
+    require_once("includes/app_config.php");
+    require_once("includes/seo_helper.php");
 
     if(!isset($_SESSION['user_id'])){
         header("location: /home");
@@ -255,17 +257,23 @@
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | PG Life</title>
- 
-    <?php 
-        include "includes/head_links.php";
+
+    <?php
+    seo_head([
+        'title'     => 'My Dashboard | PG Life',
+        'description' => 'Manage your PG Life account, bookings, interested properties, and maintenance tickets.',
+        'canonical' => SITE_URL . '/dashboard',
+        'noindex'   => true,
+    ]);
     ?>
+
+    <?php include "includes/head_links.php"; ?>
 
     <link href="css/dashboard.css" rel="stylesheet" />
     <link href="css/image_manager.css" rel="stylesheet" />
@@ -287,6 +295,7 @@
         </ol>
     </nav>
 
+    <main id="main-content">
     <div class="user-profile page-container">
         <h1>My Profile</h1>
         <div class="row">
@@ -366,18 +375,20 @@
                         <i class="fas fa-shield-alt mr-1"></i>By uploading a document, you consent to PG Life storing and reviewing your identity proof for verification purposes. Your document is stored securely and will not be shared with third parties. You may request deletion at any time. See our <a href="/privacy" target="_blank" style="color: var(--primary-color); text-decoration: none;">Privacy Policy</a> for details.
                     </p>
                 <?php } else if ((int)$user['is_verified'] === 1) { ?>
-                    <!-- Pending state and Admin Simulation -->
+                    <!-- Pending state -->
                     <div class="alert alert-info border-0 rounded-lg p-3 d-flex align-items-center justify-content-between flex-wrap" style="background-color: #e3f2fd; border-radius: 8px;">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-info-circle text-primary mr-3" style="font-size: 24px;"></i>
                             <div>
                                 <h6 class="alert-heading mb-1 font-weight-bold text-dark" style="font-size: 14px;">Your document is under review</h6>
-                                <p class="mb-0 text-muted" style="font-size: 12px;">We are currently verifying the uploaded document. You can simulate the admin approval instantly below.</p>
+                                <p class="mb-0 text-muted" style="font-size: 12px;">We are currently verifying the uploaded document. You will be notified once verification is complete.</p>
                             </div>
                         </div>
+                        <?php if (feature_mock_kyc_enabled()) { ?>
                         <button type="button" class="btn btn-success btn-sm font-weight-bold px-4 py-2 mt-2 mt-lg-0 shadow-sm" id="btn-simulate-kyc-approval" style="border-radius: 20px; font-size: 13px;">
                             <i class="fas fa-magic mr-1"></i>Simulate Admin Verification
                         </button>
+                        <?php } ?>
                     </div>
                 <?php } else if ((int)$user['is_verified'] === 2) { ?>
                     <!-- Verified State Details -->
@@ -956,6 +967,8 @@
             </div>
         </div>
     </div>
+
+    </main><!-- /#main-content -->
 
     <?php
         include "includes/footer.php";

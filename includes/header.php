@@ -35,10 +35,10 @@
         }
     }
 ?>
-<div class="header sticky-top">
-    <nav class="navbar navbar-expand-md navbar-light">
-        <a class="navbar-brand" href="/home">
-            <img src="img/logo.png" alt="PG Life" />
+<header class="header sticky-top" role="banner">
+    <nav class="navbar navbar-expand-md navbar-light" aria-label="Main navigation">
+        <a class="navbar-brand" href="/home" aria-label="PG Life — Home">
+            <img src="img/logo.png" alt="PG Life — Find PG Accommodation in India" width="120" height="40" />
         </a>
         <div class="d-flex align-items-center ml-auto d-md-none">
             <?php if (isset($_SESSION['user_id'])) { ?>
@@ -148,7 +148,7 @@
             </ul>
         </div>
     </nav>    
-</div>
+</header>
 
 <div id="loading"></div>
 
@@ -156,8 +156,8 @@
 <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
 <nav class="mobile-drawer" id="mobile-drawer">
     <div class="mobile-drawer-header">
-        <a class="navbar-brand" href="/home">
-            <img src="img/logo.png" alt="PG Life" />
+        <a class="navbar-brand" href="/home" aria-label="PG Life — Home">
+            <img src="img/logo.png" alt="PG Life logo" width="120" height="40" />
         </a>
         <button type="button" class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Close menu">
             <i class="fas fa-times"></i>

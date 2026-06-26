@@ -1,6 +1,7 @@
 <?php
     session_start();
     require("includes/database_connect.php");
+    require_once("includes/seo_helper.php");
 
     $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : NULL;
     $property_id = isset($_GET['property_id']) ? (int)$_GET['property_id'] : 0;
@@ -144,34 +145,87 @@
             }
         }
     }
+
+    $related_properties = [];
+    $sql_related = "SELECT p.id, p.name, p.address, p.rent, p.rating_clean, p.rating_food, p.rating_safety, p.primary_image
+                    FROM properties p
+                    WHERE p.city_id = ? AND p.id != ?
+                    ORDER BY p.created_at DESC
+                    LIMIT 6";
+    $stmt_related = mysqli_prepare($conn, $sql_related);
+    if ($stmt_related) {
+        mysqli_stmt_bind_param($stmt_related, "ii", $property['city_id'], $property_id);
+        mysqli_stmt_execute($stmt_related);
+        $result_related = mysqli_stmt_get_result($stmt_related);
+        if ($result_related) {
+            while ($rel_row = mysqli_fetch_assoc($result_related)) {
+                $rel_imgs = glob("img/properties/" . (int)$rel_row['id'] . "/*");
+                $rel_row['image_url'] = !empty($rel_imgs) ? $rel_imgs[0] : 'img/bg.jpg';
+                $related_properties[] = $rel_row;
+            }
+        }
+        mysqli_stmt_close($stmt_related);
+    }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= htmlspecialchars($property['property_name']); ?> in <?= htmlspecialchars($property['city_name']); ?> | PG Life</title>
-    <meta name="description" content="View details for <?= htmlspecialchars($property['property_name']); ?> located at <?= htmlspecialchars($property['address']); ?>. Monthly rent: ₹<?= number_format($property['rent']); ?>. Check available amenities, reviews, and interactive location map.">
-    <meta name="keywords" content="<?= htmlspecialchars($property['property_name']); ?>, PG in <?= htmlspecialchars($property['city_name']); ?>, paying guest, hostel rooms, rent in <?= htmlspecialchars($property['city_name']); ?>">
 
-    <?php 
-        include "includes/head_links.php";
+    <?php
+    $prop_canonical = SITE_URL . '/pg/' . $property_id;
+    $prop_img_glob  = glob("img/properties/" . $property_id . "/*");
+    $prop_og_img    = !empty($prop_img_glob) ? SITE_URL . '/' . $prop_img_glob[0] : DEFAULT_OG_IMG;
+    $avg_r = round(($property['rating_clean'] + $property['rating_food'] + $property['rating_safety']) / 3, 1);
+    $prop_schema = schema_property($property + ['id' => $property_id], $property['city_name'], $amenities, $reviews);
+    $page_schemas = [$prop_schema];
+    
+    if (!empty($reviews)) {
+        $page_schemas[] = [
+            '@context' => 'https://schema.org',
+            '@type'    => 'WebPage',
+            'name'     => $property['property_name'] . ' Reviews',
+            'url'      => $prop_canonical,
+            'isPartOf' => ['@id' => SITE_URL . '/#website'],
+            'author'   => ['@id' => SITE_URL . '/#person'],
+            'datePublished' => date('Y-m-d', strtotime($property['created_at'] ?? 'now')),
+            'dateModified'  => date('Y-m-d', strtotime($property['updated_at'] ?? 'now')),
+        ];
+    }
+    
+    seo_head([
+        'title'       => $property['property_name'] . ' in ' . $property['city_name'] . ' — PG Accommodation | PG Life',
+        'description' => 'Book ' . $property['property_name'] . ' at ' . $property['address'] . '. Rent: ₹' . number_format($property['rent']) . '/month. ' . count($amenities) . ' amenities, ' . count($reviews) . ' reviews. View map & book now.',
+        'canonical'   => $prop_canonical,
+        'og_title'    => $property['property_name'] . ' — PG in ' . $property['city_name'],
+        'og_desc'     => 'Rent: ₹' . number_format($property['rent']) . '/month • ' . $property['address'] . '. Verified PG listing with photos, amenities, live map and user reviews.',
+        'og_image'    => $prop_og_img,
+        'og_type'     => 'website',
+        'keywords'    => $property['property_name'] . ', PG in ' . $property['city_name'] . ', paying guest ' . $property['city_name'] . ', hostel ' . $property['city_name'],
+        'breadcrumbs' => [
+            ['name' => 'Home',                                    'url' => SITE_URL . '/home'],
+            ['name' => 'PG in ' . $property['city_name'],        'url' => SITE_URL . '/properties/' . rawurlencode($property['city_name'])],
+            ['name' => $property['property_name'],                'url' => $prop_canonical],
+        ],
+        'schema'      => $page_schemas,
+    ]);
     ?>
 
     <!-- Leaflet.js CSS for Interactive Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
+    <?php include "includes/head_links.php"; ?>
     <link href="css/property_detail.css?v=3" rel="stylesheet" />
 </head>
 
 <body>
-    <?php
-        include "includes/header.php";
-    ?>
+    <?php include "includes/header.php"; ?>
 
+    <main id="main-content">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb py-2">
             <li class="breadcrumb-item">
@@ -293,7 +347,7 @@
             </div>
         </div>
         <div class="detail-container">
-            <div class="property-name"><?= htmlspecialchars($property['property_name'])?></div>
+            <h1 class="property-name"><?= htmlspecialchars($property['property_name'])?></h1>
             <div class="property-address"><?= htmlspecialchars($property['address'])?></div>
             <div class="property-gender">
                 <?php
@@ -338,7 +392,7 @@
 
     <div class="property-amenities">
         <div class="page-container">
-            <h1>Amenities</h1>
+            <h2>Amenities</h2>
             <div class="row justify-content-between">
                 <div class="col-md-auto">
                     <h5>Building</h5>
@@ -408,7 +462,7 @@
     </div>
 
     <div class="property-about page-container">
-        <h1>About the Property</h1>
+        <h2>About the Property</h2>
         <p><?= htmlspecialchars($property['description']) ?></p>
 
         <?php if (!empty($room_types)) { ?>
@@ -416,7 +470,9 @@
         <div class="room-types-section mt-4">
             <h4 class="font-weight-bold mb-3"><i class="fas fa-door-open mr-2 text-primary"></i>Available Room Types</h4>
             <div class="room-types-grid">
-                <?php foreach ($room_types as $room) {
+                <?php 
+                $firstAvailableSelected = false;
+                foreach ($room_types as $room) {
                     $available = $room['available_beds'];
                     $total     = (int)$room['total_beds'];
                     $occupied  = (int)$room['occupied_beds'];
@@ -426,8 +482,14 @@
                     $roomIcons   = ['single' => 'fa-bed', 'double' => 'fa-users', 'triple' => 'fa-user-friends', 'dormitory' => 'fa-building', 'private' => 'fa-home'];
                     $icon        = $roomIcons[$room['room_type']] ?? 'fa-bed';
                     $amenitiesList = $room['amenities'] ? explode(',', $room['amenities']) : [];
+                    
+                    $extraClass = '';
+                    if ($available > 0 && !$firstAvailableSelected) {
+                        $extraClass = ' selected';
+                        $firstAvailableSelected = true;
+                    }
                 ?>
-                <div class="room-type-card <?= $statusClass ?>">
+                <div class="room-type-card <?= $statusClass ?><?= $extraClass ?>" data-room-type-id="<?= $room['id'] ?>">
                     <div class="room-type-header">
                         <div class="room-type-icon"><i class="fas <?= $icon ?>"></i></div>
                         <div class="room-type-info">
@@ -513,7 +575,7 @@
 
     <div class="property-rating">
         <div class="page-container">
-            <h1>Property Rating</h1>
+            <h2>Property Rating</h2>
             <div class="row align-items-center justify-content-between">
                 <div class="col-md-6">
                     <div class="rating-criteria row">
@@ -633,7 +695,7 @@
 
     <!-- Reviews and Ratings Section -->
     <div class="property-reviews page-container border-top pt-5">
-        <h1>User Reviews</h1>
+        <h2>User Reviews</h2>
         <div id="reviews-list">
             <?php if (count($reviews) == 0) { ?>
                 <p class="text-muted" id="no-reviews-msg">No reviews yet. Be the first to write one!</p>
@@ -703,7 +765,7 @@
     </div>
 
     <div class="property-testimonials page-container border-top pt-5">
-        <h1>What people say</h1>
+        <h2>What People Say</h2>
         <?php if (empty($testimonials)) { ?>
             <div class="testimonials-empty-state">
                 <i class="far fa-comment-dots"></i>
@@ -728,6 +790,37 @@
             }
         } ?>
     </div>
+
+    <?php if (!empty($related_properties)) { ?>
+    <div class="page-container border-top pt-5" style="margin-top: 40px;">
+        <h2>Explore More PGs in <?= htmlspecialchars($property['city_name']) ?></h2>
+        <p class="text-muted mb-4">Other verified PG accommodations in <?= htmlspecialchars($property['city_name']) ?> that you might like.</p>
+        <div class="row">
+            <?php foreach ($related_properties as $rel) {
+                $rel_rating = round(($rel['rating_clean'] + $rel['rating_food'] + $rel['rating_safety']) / 3, 1);
+            ?>
+            <div class="col-md-4 col-sm-6 mb-4">
+                <a href="/pg/<?= (int)$rel['id'] ?>" class="related-property-card" style="text-decoration: none; color: inherit;">
+                    <div class="related-property-img" style="background-image: url('<?= htmlspecialchars($rel['image_url']) ?>');"></div>
+                    <div class="related-property-body p-3 border rounded-top" style="border-radius: 8px 8px 0 0;">
+                        <h6 class="font-weight-bold mb-1"><?= htmlspecialchars($rel['name']) ?></h6>
+                        <p class="text-muted mb-1" style="font-size: 13px;"><i class="fas fa-map-marker-alt mr-1"></i><?= htmlspecialchars($rel['address']) ?></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="font-weight-bold text-primary">₹<?= number_format($rel['rent']) ?>/mo</span>
+                            <span class="text-warning" style="font-size: 13px;"><i class="fas fa-star"></i> <?= $rel_rating ?></span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <?php } ?>
+        </div>
+        <div class="text-center mt-3">
+            <a href="/properties/<?= urlencode($property['city_name']) ?>" class="btn btn-outline-primary">View All PGs in <?= htmlspecialchars($property['city_name']) ?></a>
+        </div>
+    </div>
+    <?php } ?>
+
+    </main><!-- /#main-content -->
 
     <?php
         include "includes/signup_modal.php";

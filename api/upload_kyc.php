@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("../includes/secure_storage.php");
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -51,18 +52,16 @@
         $ext = 'pdf';
     }
 
-    // Ensure folder exists
-    $upload_dir = '../img/kyc/';
-    if (!is_dir($upload_dir)) {
-        mkdir($upload_dir, 0755, true);
-    }
+    // Ensure folder exists outside web root
+    $upload_dir = secure_kyc_dir();
+    ensure_secure_dir($upload_dir);
 
     // Generate unique name
     $filename = 'kyc_' . $user_id . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
-    $dest_path = $upload_dir . $filename;
+    $dest_path = $upload_dir . '/' . $filename;
 
     if (move_uploaded_file($file['tmp_name'], $dest_path)) {
-        $kyc_doc_path = 'img/kyc/' . $filename;
+        $kyc_doc_path = secure_storage_db_path('kyc', $filename);
 
         // Fetch old document path to delete if exists
         $sql_old = "SELECT kyc_document FROM users WHERE id = ?";
@@ -73,8 +72,8 @@
             $res_old = mysqli_stmt_get_result($stmt_old);
             if ($res_old && $row_old = mysqli_fetch_assoc($res_old)) {
                 $old_doc = $row_old['kyc_document'];
-                if (!empty($old_doc) && file_exists('../' . $old_doc)) {
-                    @unlink('../' . $old_doc);
+                if (!empty($old_doc)) {
+                    delete_stored_file($old_doc);
                 }
             }
             mysqli_stmt_close($stmt_old);

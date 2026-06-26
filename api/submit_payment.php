@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("../includes/secure_storage.php");
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -89,18 +90,16 @@
             $ext = 'pdf';
         }
 
-        // Create folder
-        $upload_dir = '../img/receipts/';
-        if (!is_dir($upload_dir)) {
-            mkdir($upload_dir, 0755, true);
-        }
+        // Create folder outside web root
+        $upload_dir = secure_receipts_dir();
+        ensure_secure_dir($upload_dir);
 
         // Generate name
         $filename = 'receipt_' . $booking_id . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
-        $dest_path = $upload_dir . $filename;
+        $dest_path = $upload_dir . '/' . $filename;
 
         if (move_uploaded_file($file['tmp_name'], $dest_path)) {
-            $screenshot_path = 'img/receipts/' . $filename;
+            $screenshot_path = secure_storage_db_path('receipts', $filename);
         } else {
             echo json_encode(array("success" => false, "message" => "Failed to save uploaded receipt."));
             return;
@@ -123,8 +122,8 @@
 
     if ($existing) {
         // Delete old screenshot file if exists
-        if (!empty($existing['screenshot']) && file_exists('../' . $existing['screenshot'])) {
-            @unlink('../' . $existing['screenshot']);
+        if (!empty($existing['screenshot'])) {
+            delete_stored_file($existing['screenshot']);
         }
 
         $sql_update = "UPDATE payments SET amount = ?, status = 0, utr_number = ?, screenshot = ?, payment_date = NOW() WHERE booking_id = ?";

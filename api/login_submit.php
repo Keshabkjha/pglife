@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("../includes/rate_limiter.php");
     header('Content-Type: application/json; charset=utf-8');
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
@@ -14,6 +15,22 @@
 
     if (empty($email) || empty($password)) {
         $response = array("success" => false, "message" => "Please fill in all fields.");
+        echo json_encode($response);
+        return;
+    }
+
+    $client_ip = get_client_ip();
+    $rate = check_rate_limit($conn, 'login', $client_ip, 10, 900);
+    if (!$rate['allowed']) {
+        $response = array("success" => false, "message" => "Too many login attempts. Please try again in " . format_retry_after($rate['retry_after']) . ".");
+        echo json_encode($response);
+        return;
+    }
+
+    $email_rate_key = 'login_email_' . md5(strtolower($email));
+    $email_rate = check_rate_limit($conn, $email_rate_key, $client_ip, 10, 900);
+    if (!$email_rate['allowed']) {
+        $response = array("success" => false, "message" => "Too many login attempts for this account. Please try again in " . format_retry_after($email_rate['retry_after']) . ".");
         echo json_encode($response);
         return;
     }

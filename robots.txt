@@ -1,0 +1,63 @@
+User-agent: *
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /logout
+Disallow: /storage/
+Disallow: /img/kyc/
+Disallow: /img/receipts/
+Disallow: /img/profiles/
+Disallow: /vendor/
+Disallow: /database/
+Disallow: /tests/
+Disallow: /*.php$
+Disallow: /includes/
+
+Allow: /
+Allow: /home
+Allow: /properties/
+Allow: /pg/
+Allow: /privacy
+Allow: /terms
+Allow: /disclaimer
+Allow: /sitemap.xml
+Allow: /robots.txt
+Allow: /manifest.json
+
+Sitemap: https://www.pglife.in/sitemap.xml
+
+# Crawl-delay for well-behaved bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: YandexBot
+Crawl-delay: 5
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: Sogou
+Disallow: /
+
+User-agent: ia_archiver
+Disallow: /
+
+User-agent: dotbot
+Crawl-delay: 5
+
+User-agent: robots-txtCheck
+Disallow: /

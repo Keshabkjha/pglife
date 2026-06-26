@@ -47,17 +47,75 @@
         return;
     }
 
-    // Book the property
-    $sql_book = "INSERT INTO bookings (user_id, property_id) VALUES (?, ?)";
-    $stmt_book = mysqli_prepare($conn, $sql_book);
-    if (!$stmt_book) {
+    // Enforce room inventory: require at least one available room_type
+    mysqli_begin_transaction($conn);
+    
+    $req_room_type_id = isset($_POST['room_type_id']) ? (int)$_POST['room_type_id'] : 0;
+    $room_type_id = null;
+    
+    if ($req_room_type_id > 0) {
+        $sql_room = "SELECT id, total_beds, occupied_beds FROM room_types WHERE id = ? AND property_id = ? AND total_beds > occupied_beds FOR UPDATE";
+        $stmt_room = mysqli_prepare($conn, $sql_room);
+        if (!$stmt_room) {
+            mysqli_rollback($conn);
+            echo json_encode(array("success" => false, "message" => "Booking failed: inventory system unavailable."));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_room, "ii", $req_room_type_id, $property_id);
+    } else {
+        $sql_room = "SELECT id, total_beds, occupied_beds FROM room_types WHERE property_id = ? AND total_beds > occupied_beds LIMIT 1 FOR UPDATE";
+        $stmt_room = mysqli_prepare($conn, $sql_room);
+        if (!$stmt_room) {
+            mysqli_rollback($conn);
+            echo json_encode(array("success" => false, "message" => "Booking failed: inventory system unavailable."));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_room, "i", $property_id);
+    }
+    
+    mysqli_stmt_execute($stmt_room);
+    $result_room = mysqli_stmt_get_result($stmt_room);
+    if (!$result_room || mysqli_num_rows($result_room) === 0) {
+        mysqli_rollback($conn);
+        mysqli_stmt_close($stmt_room);
+        echo json_encode(array("success" => false, "message" => "Sorry, no rooms are available for booking at this property."));
+        return;
+    }
+    $row_room = mysqli_fetch_assoc($result_room);
+    $room_type_id = (int)$row_room['id'];
+    mysqli_stmt_close($stmt_room);
+
+    // Update occupied beds
+    $sql_update_room = "UPDATE room_types SET occupied_beds = occupied_beds + 1 WHERE id = ?";
+    $stmt_update_room = mysqli_prepare($conn, $sql_update_room);
+    if (!$stmt_update_room) {
+        mysqli_rollback($conn);
         echo json_encode(array("success" => false, "message" => "Something went wrong!"));
         return;
     }
-    mysqli_stmt_bind_param($stmt_book, "ii", $user_id, $property_id);
+    mysqli_stmt_bind_param($stmt_update_room, "i", $room_type_id);
+    $result_update_room = mysqli_stmt_execute($stmt_update_room);
+    mysqli_stmt_close($stmt_update_room);
+    if (!$result_update_room) {
+        mysqli_rollback($conn);
+        echo json_encode(array("success" => false, "message" => "Something went wrong!"));
+        return;
+    }
+
+    // Book the property
+    $sql_book = "INSERT INTO bookings (user_id, property_id, room_type_id) VALUES (?, ?, ?)";
+    $stmt_book = mysqli_prepare($conn, $sql_book);
+    if (!$stmt_book) {
+        mysqli_rollback($conn);
+        echo json_encode(array("success" => false, "message" => "Something went wrong!"));
+        return;
+    }
+    mysqli_stmt_bind_param($stmt_book, "iii", $user_id, $property_id, $room_type_id);
     $result_book = mysqli_stmt_execute($stmt_book);
+    mysqli_stmt_close($stmt_book);
 
     if (!$result_book) {
+        mysqli_rollback($conn);
         echo json_encode(array("success" => false, "message" => "Something went wrong!"));
         return;
     }
@@ -77,6 +135,8 @@
         }
         mysqli_stmt_close($stmt_owner);
     }
+
+    mysqli_commit($conn);
 
     echo json_encode(array("success" => true, "message" => "Property successfully booked!"));
     mysqli_close($conn);

@@ -30,6 +30,23 @@
         return;
     }
 
+    // Require an existing booking before allowing a review
+    $sql_booking = "SELECT id FROM bookings WHERE user_id = ? AND property_id = ?";
+    $stmt_booking = mysqli_prepare($conn, $sql_booking);
+    if (!$stmt_booking) {
+        echo json_encode(array("success" => false, "message" => "Something went wrong!"));
+        return;
+    }
+    mysqli_stmt_bind_param($stmt_booking, "ii", $user_id, $property_id);
+    mysqli_stmt_execute($stmt_booking);
+    mysqli_stmt_store_result($stmt_booking);
+    if (mysqli_stmt_num_rows($stmt_booking) === 0) {
+        echo json_encode(array("success" => false, "message" => "You can only review properties you have booked."));
+        mysqli_stmt_close($stmt_booking);
+        return;
+    }
+    mysqli_stmt_close($stmt_booking);
+
     // Check for duplicate review by same user on this property
     $sql_check = "SELECT id FROM reviews WHERE property_id = ? AND user_id = ?";
     $stmt_check = mysqli_prepare($conn, $sql_check);

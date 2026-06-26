@@ -1,20 +1,42 @@
 <?php
 session_start();
 require_once "includes/database_connect.php";
+require_once "includes/seo_helper.php";
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PG Life Disclaimer - Important information about our platform's role and limitations.">
-    <title>Disclaimer | PG Life</title>
+    <?php
+    seo_head([
+        'title'       => 'Disclaimer | PG Life',
+        'description' => 'Read PG Life\'s Disclaimer. Important information about our platform\'s role as an intermediary, liability limitations, and user responsibilities.',
+        'canonical'   => SITE_URL . '/disclaimer',
+        'keywords'    => 'PG Life disclaimer, liability, intermediary platform, Keshab Kumar',
+        'breadcrumbs' => [
+            ['name' => 'Home',       'url' => SITE_URL . '/home'],
+            ['name' => 'Disclaimer', 'url' => SITE_URL . '/disclaimer'],
+        ],
+        'schema' => [[
+            '@context' => 'https://schema.org',
+            '@type'    => 'WebPage',
+            'name'     => 'Disclaimer',
+            'url'      => SITE_URL . '/disclaimer',
+            'isPartOf' => ['@id' => SITE_URL . '/#website'],
+            'author'   => ['@id' => SITE_URL . '/#person'],
+            'datePublished' => '2024-01-01',
+            'dateModified'  => '2026-06-20',
+        ]],
+    ]);
+    ?>
     <?php include "includes/head_links.php"; ?>
     <link href="css/legal.css" rel="stylesheet">
 </head>
 <body>
     <?php include "includes/header.php"; ?>
 
+    <main id="main-content">
     <div class="legal-page">
         <div class="legal-container">
             <div class="legal-header">
@@ -115,8 +137,8 @@ require_once "includes/database_connect.php";
                 <h2>10. Contact</h2>
                 <p>If you have concerns about any listing, user, or experience on PG Life, please contact us:</p>
                 <div class="legal-contact">
-                    <p><strong>Email:</strong> [support@pglife.com]</p>
-                    <p><strong>Address:</strong> [Sector 42, Gurgaon, Haryana, India]</p>
+                    <p><strong>Email:</strong> support@pglife.com</p>
+                    <p><strong>Address:</strong> Sector 42, Gurgaon, Haryana, India</p>
                 </div>
             </div>
 
@@ -128,6 +150,7 @@ require_once "includes/database_connect.php";
         </div>
     </div>
 
+    </main>
     <?php
     include "includes/signup_modal.php";
     include "includes/login_modal.php";

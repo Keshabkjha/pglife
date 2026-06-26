@@ -30,6 +30,18 @@ window.addEventListener ("load", function () {
         });
     }
 
+    var selected_card = document.querySelector('.room-type-card.selected');
+    var selectedRoomTypeId = selected_card ? selected_card.getAttribute('data-room-type-id') : null;
+
+    var room_cards = document.querySelectorAll('.room-type-card:not(.full)');
+    room_cards.forEach(function (card) {
+        card.addEventListener('click', function () {
+            room_cards.forEach(function (c) { c.classList.remove('selected'); });
+            this.classList.add('selected');
+            selectedRoomTypeId = this.getAttribute('data-room-type-id');
+        });
+    });
+
     var book_now_btn = document.getElementById('book-now-btn');
     if (book_now_btn) {
         book_now_btn.addEventListener("click", function (event) {
@@ -37,6 +49,9 @@ window.addEventListener ("load", function () {
             var form_data = new FormData();
             form_data.append("property_id", property_id);
             form_data.append("csrf_token", window.csrf_token);
+            if (selectedRoomTypeId) {
+                form_data.append("room_type_id", selectedRoomTypeId);
+            }
 
             XHR.addEventListener("load", book_property_success);
             XHR.addEventListener("error", on_error);

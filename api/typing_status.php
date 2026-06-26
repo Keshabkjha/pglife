@@ -1,5 +1,6 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("../includes/app_config.php");
     header('Content-Type: application/json; charset=utf-8');
 
     if (!isset($_SESSION['user_id'])) {
@@ -18,6 +19,8 @@
     $method = $_SERVER['REQUEST_METHOD'];
 
     if ($method === 'POST') {
+        require_csrf_token();
+
         // Set typing status
         $contact_id = isset($_POST['contact_id']) ? (int)$_POST['contact_id'] : 0;
         $property_id = isset($_POST['property_id']) ? (int)$_POST['property_id'] : 0;

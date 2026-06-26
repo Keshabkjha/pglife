@@ -1,4 +1,6 @@
 <?php
+    require_once __DIR__ . '/logger.php';
+
     // Load local environment variables from .env file if present (skip inside Docker)
     $env_path = __DIR__ . '/../.env';
     if (file_exists($env_path) && !file_exists('/.dockerenv')) {
@@ -18,10 +20,13 @@
         }
     }
 
+    require_once __DIR__ . '/security_headers.php';
+
     if (session_status() === PHP_SESSION_NONE) {
         // Enforce secure session cookie flags
         ini_set('session.cookie_httponly', 1);
         ini_set('session.use_only_cookies', 1);
+        ini_set('session.cookie_samesite', 'Strict');
         if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
             ini_set('session.cookie_secure', 1);
         }

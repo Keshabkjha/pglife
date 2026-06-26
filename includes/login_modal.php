@@ -17,7 +17,7 @@
                                 <i class="fas fa-user"></i>
                             </span>
                         </div>
-                        <input type="email" class="form-control" name="email" placeholder="Email" required>
+                        <input type="email" class="form-control" name="email" placeholder="Email" aria-label="Email Address" required>
                     </div>
 
                     <div class="input-group form-group">
@@ -26,7 +26,7 @@
                                 <i class="fas fa-lock"></i>
                             </span>
                         </div>
-                        <input type="password" class="form-control" name="password" autocomplete="current-password" placeholder="Password" minlength="8" required>
+                        <input type="password" class="form-control" name="password" autocomplete="current-password" placeholder="Password" aria-label="Password" minlength="8" required>
                     </div>
 
                     <div class="text-right mb-3" style="font-size: 13px;">
@@ -71,7 +71,7 @@
                                 <i class="fas fa-envelope"></i>
                             </span>
                         </div>
-                        <input type="email" class="form-control" name="email" placeholder="Email Address" required>
+                        <input type="email" class="form-control" name="email" placeholder="Email Address" aria-label="Email Address" required>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-block btn-primary">Send Verification OTP</button>
@@ -91,7 +91,7 @@
                                 <i class="fas fa-key"></i>
                             </span>
                         </div>
-                        <input type="text" class="form-control" name="otp" placeholder="6-Digit OTP" maxlength="6" minlength="6" required>
+                        <input type="text" class="form-control" name="otp" placeholder="6-Digit OTP" aria-label="6-Digit OTP" maxlength="6" minlength="6" required>
                     </div>
                     <div class="input-group form-group">
                         <div class="input-group-prepend">
@@ -99,7 +99,7 @@
                                 <i class="fas fa-lock"></i>
                             </span>
                         </div>
-                        <input type="password" class="form-control" name="password" id="reset-password-input" autocomplete="new-password" placeholder="New Password (min 8 characters)" minlength="8" required>
+                        <input type="password" class="form-control" name="password" id="reset-password-input" autocomplete="new-password" placeholder="New Password (min 8 characters)" aria-label="New Password" minlength="8" required>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-block btn-success">Reset Password</button>

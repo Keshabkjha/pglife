@@ -1,0 +1,58 @@
+name: PGLife CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: pglife
+          MYSQL_ROOT_PASSWORD: rootpassword
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mysqli, zip
+        coverage: none
+
+    - name: Install Composer Dependencies
+      run: composer install --no-progress --prefer-dist
+
+    - name: Set up Environment Config
+      run: cp .env.example .env
+
+    - name: Seed Database
+      run: |
+        mysql -h 127.0.0.1 -P 3307 -uroot -prootpassword pglife < database/pglife.sql
+        for migration in database/[0-9][0-9]_*.sql; do
+          echo "Applying $migration"
+          mysql -h 127.0.0.1 -P 3307 -uroot -prootpassword pglife < "$migration"
+        done
+
+    - name: Run PHPUnit Tests
+      env:
+        DB_HOST: 127.0.0.1:3307
+        DB_USER: root
+        DB_PASSWORD: rootpassword
+        DB_NAME: pglife
+      run: vendor/bin/phpunit

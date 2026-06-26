@@ -11,7 +11,9 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - ./database/pglife.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/pglife.sql:/docker-entrypoint-initdb.d/01_base.sql
+      - ./database/run_migrations.sh:/docker-entrypoint-initdb.d/02_run_migrations.sh
+      - ./database:/migrations:ro
       - mysql_data:/var/lib/mysql
 
   web:
@@ -29,6 +31,8 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: pglife
+      APP_ENV: development
+      FEATURE_MOCK_KYC: "true"
       SMTP_HOST: ${SMTP_HOST:-mailhog}
       SMTP_PORT: ${SMTP_PORT:-1025}
       SMTP_USER: ${SMTP_USER:-}

@@ -1,11 +1,14 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("../includes/app_config.php");
     header('Content-Type: application/json; charset=utf-8');
 
     if (!isset($_SESSION['user_id'])) {
         echo json_encode(array("success" => false, "message" => "Not logged in."));
         return;
     }
+
+    require_csrf_token();
 
     $user_id = (int)$_SESSION['user_id'];
     $contact_id = isset($_POST['contact_id']) ? (int)$_POST['contact_id'] : 0;

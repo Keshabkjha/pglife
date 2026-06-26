@@ -1,6 +1,13 @@
 <?php
     require("../includes/database_connect.php");
+    require_once("../includes/app_config.php");
     header('Content-Type: application/json; charset=utf-8');
+
+    if (!feature_mock_kyc_enabled()) {
+        http_response_code(404);
+        echo json_encode(array("success" => false, "message" => "Not found."));
+        exit;
+    }
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {

@@ -1,20 +1,42 @@
 <?php
 session_start();
 require_once "includes/database_connect.php";
+require_once "includes/seo_helper.php";
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PG Life Terms of Service - Rules and conditions for using our PG accommodation platform.">
-    <title>Terms of Service | PG Life</title>
+    <?php
+    seo_head([
+        'title'       => 'Terms of Service | PG Life',
+        'description' => 'Read PG Life\'s Terms of Service. Understand the rules and conditions for using our PG accommodation platform in India.',
+        'canonical'   => SITE_URL . '/terms',
+        'keywords'    => 'PG Life terms of service, terms and conditions, user agreement, Keshab Kumar',
+        'breadcrumbs' => [
+            ['name' => 'Home',             'url' => SITE_URL . '/home'],
+            ['name' => 'Terms of Service', 'url' => SITE_URL . '/terms'],
+        ],
+        'schema' => [[
+            '@context' => 'https://schema.org',
+            '@type'    => 'WebPage',
+            'name'     => 'Terms of Service',
+            'url'      => SITE_URL . '/terms',
+            'isPartOf' => ['@id' => SITE_URL . '/#website'],
+            'author'   => ['@id' => SITE_URL . '/#person'],
+            'datePublished' => '2024-01-01',
+            'dateModified'  => '2026-06-20',
+        ]],
+    ]);
+    ?>
     <?php include "includes/head_links.php"; ?>
     <link href="css/legal.css" rel="stylesheet">
 </head>
 <body>
     <?php include "includes/header.php"; ?>
 
+    <main id="main-content">
     <div class="legal-page">
         <div class="legal-container">
             <div class="legal-header">
@@ -179,7 +201,7 @@ require_once "includes/database_connect.php";
 
             <div class="legal-section">
                 <h2>14. Governing Law and Jurisdiction</h2>
-                <p>These Terms shall be governed by and construed in accordance with the laws of India. Any disputes arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts in [Your City], India.</p>
+                <p>These Terms shall be governed by and construed in accordance with the laws of India. Any disputes arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts in New Delhi, India.</p>
             </div>
 
             <div class="legal-section">
@@ -191,8 +213,8 @@ require_once "includes/database_connect.php";
                 <h2>16. Contact</h2>
                 <p>For questions about these Terms, please contact us at:</p>
                 <div class="legal-contact">
-                    <p><strong>Email:</strong> [support@pglife.com]</p>
-                    <p><strong>Address:</strong> [Sector 42, Gurgaon, Haryana, India]</p>
+                    <p><strong>Email:</strong> support@pglife.com</p>
+                    <p><strong>Address:</strong> Sector 42, Gurgaon, Haryana, India</p>
                 </div>
             </div>
 
@@ -204,6 +226,7 @@ require_once "includes/database_connect.php";
         </div>
     </div>
 
+    </main>
     <?php
     include "includes/signup_modal.php";
     include "includes/login_modal.php";

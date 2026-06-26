@@ -1,0 +1,12 @@
+{
+  "name": "pglife",
+  "version": "1.0.0",
+  "description": "PGLife E2E Tests",
+  "main": "index.js",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

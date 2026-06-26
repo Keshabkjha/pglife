@@ -22,3 +22,13 @@ Desktop.ini
 
 # Environment variables
 .env
+
+# Sensitive uploaded files (keep directory structure only)
+storage/kyc/*
+!storage/kyc/.gitkeep
+storage/receipts/*
+!storage/receipts/.gitkeep
+img/kyc/*
+!img/kyc/.htaccess
+img/receipts/*
+!img/receipts/.htaccess

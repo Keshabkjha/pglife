@@ -196,7 +196,8 @@ $(document).ready(function () {
             data: {
                 contact_id: activeContactId,
                 property_id: activePropertyId,
-                is_typing: isTyping
+                is_typing: isTyping,
+                csrf_token: window.csrf_token
             }
         });
     }
@@ -263,7 +264,7 @@ $(document).ready(function () {
         $.ajax({
             url: 'api/mark_delivered.php',
             type: 'POST',
-            data: { contact_id: contactId, property_id: propertyId }
+            data: { contact_id: contactId, property_id: propertyId, csrf_token: window.csrf_token }
         });
 
         // Hide typing indicator on open
@@ -467,7 +468,7 @@ $(document).ready(function () {
             container.append(`
                 <div class="chat-message-row system">
                     <div class="chat-bubble shadow-sm">
-                        <i class="fas fa-info-circle mr-1"></i>${msg.message}
+                        <i class="fas fa-info-circle mr-1"></i>${escapeHtml(msg.message)}
                     </div>
                 </div>
             `);

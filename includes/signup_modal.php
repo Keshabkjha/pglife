@@ -19,7 +19,7 @@
                                 <i class="fas fa-user"></i>
                             </span>
                         </div>
-                        <input type="text" class="form-control" name="full_name" placeholder="Full Name" maxlength="30" required>
+                        <input type="text" class="form-control" name="full_name" placeholder="Full Name" aria-label="Full Name" maxlength="30" required>
                     </div>
 
                     <div class="input-group form-group">
@@ -28,7 +28,7 @@
                                 <i class="fas fa-phone-alt"></i>
                             </span>
                         </div>
-                        <input type="text" class="form-control" name="phone" placeholder="Phone Number" maxlength="10" minlength="10" required>
+                        <input type="text" class="form-control" name="phone" placeholder="Phone Number" aria-label="Phone Number" maxlength="10" minlength="10" required>
                     </div>
 
                     <div class="input-group form-group">
@@ -37,7 +37,7 @@
                                 <i class="fas fa-envelope"></i>
                             </span>
                         </div>
-                        <input type="email" class="form-control" name="email" placeholder="Email" required>
+                        <input type="email" class="form-control" name="email" placeholder="Email" aria-label="Email Address" required>
                     </div>
 
                     <div class="input-group form-group">
@@ -46,7 +46,7 @@
                                 <i class="fas fa-lock"></i>
                             </span>
                         </div>
-                        <input type="password" class="form-control" name="password" autocomplete="new-password" placeholder="Password" minlength="8" required>
+                        <input type="password" class="form-control" name="password" autocomplete="new-password" placeholder="Password" aria-label="Password" minlength="8" required>
                     </div>
 
                     <div class="input-group form-group">
@@ -55,7 +55,7 @@
                                 <i class="fas fa-building"></i>
                             </span>
                         </div>
-                        <input type="text" class="form-control" name="institution_or_organization" placeholder="College / Company (Optional)" maxlength="150">
+                        <input type="text" class="form-control" name="institution_or_organization" placeholder="College / Company (Optional)" aria-label="College or Company" maxlength="150">
                     </div>
 
                     <div class="form-group">
@@ -98,7 +98,7 @@
                                 <i class="fas fa-key"></i>
                             </span>
                         </div>
-                        <input type="text" class="form-control" name="otp" id="otp-input" placeholder="Enter 6-Digit OTP" maxlength="6" minlength="6" required>
+                        <input type="text" class="form-control" name="otp" id="otp-input" placeholder="Enter 6-Digit OTP" aria-label="6-Digit OTP" maxlength="6" minlength="6" required>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn btn-block btn-success">Verify OTP & Create Account</button>

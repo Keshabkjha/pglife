@@ -1,20 +1,42 @@
 <?php
 session_start();
 require_once "includes/database_connect.php";
+require_once "includes/seo_helper.php";
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PG Life Privacy Policy - How we collect, use, and protect your personal information.">
-    <title>Privacy Policy | PG Life</title>
+    <?php
+    seo_head([
+        'title'       => 'Privacy Policy | PG Life',
+        'description' => 'Read PG Life\'s Privacy Policy. Learn how we collect, use, and protect your personal data under India\'s DPDP Act 2023.',
+        'canonical'   => SITE_URL . '/privacy',
+        'keywords'    => 'PG Life privacy policy, data protection, DPDP Act 2023, grievance officer Keshab Kumar',
+        'breadcrumbs' => [
+            ['name' => 'Home',           'url' => SITE_URL . '/home'],
+            ['name' => 'Privacy Policy', 'url' => SITE_URL . '/privacy'],
+        ],
+        'schema' => [[
+            '@context' => 'https://schema.org',
+            '@type'    => 'WebPage',
+            'name'     => 'Privacy Policy',
+            'url'      => SITE_URL . '/privacy',
+            'isPartOf' => ['@id' => SITE_URL . '/#website'],
+            'author'   => ['@id' => SITE_URL . '/#person'],
+            'datePublished' => '2024-01-01',
+            'dateModified'  => '2026-06-20',
+        ]],
+    ]);
+    ?>
     <?php include "includes/head_links.php"; ?>
     <link href="css/legal.css" rel="stylesheet">
 </head>
 <body>
     <?php include "includes/header.php"; ?>
 
+    <main id="main-content">
     <div class="legal-page">
         <div class="legal-container">
             <div class="legal-header">
@@ -169,10 +191,10 @@ require_once "includes/database_connect.php";
                 <h2>9. Grievance Officer</h2>
                 <p>In accordance with the Information Technology Act, 2000 and the rules made thereunder, and the Digital Personal Data Protection Act, 2023, the name and contact details of the Grievance Officer are provided below:</p>
                 <div class="legal-contact">
-                    <p><strong>Name:</strong> [Grievance Officer Name]</p>
+                    <p><strong>Name:</strong> Keshab Kumar</p>
                     <p><strong>Designation:</strong> Grievance Officer</p>
-                    <p><strong>Email:</strong> [grievance@pglife.com]</p>
-                    <p><strong>Address:</strong> [Sector 42, Gurgaon, Haryana, India]</p>
+                    <p><strong>Email:</strong> grievance@pglife.com</p>
+                    <p><strong>Address:</strong> Sector 42, Gurgaon, Haryana, India</p>
                     <p style="margin-top: 12px; color: #94A3B8; font-size: 13px;">Grievances will be addressed within 30 days from the date of receipt.</p>
                 </div>
             </div>
@@ -201,6 +223,7 @@ require_once "includes/database_connect.php";
         </div>
     </div>
 
+    </main>
     <?php
     include "includes/signup_modal.php";
     include "includes/login_modal.php";

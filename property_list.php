@@ -1,6 +1,7 @@
 <?php
     session_start();
     require "includes/database_connect.php";
+    require_once "includes/seo_helper.php";
 
     $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : NULL;
     $city_name = isset($_GET["city"]) ? trim($_GET["city"]) : '';
@@ -140,27 +141,48 @@
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Best PG's in <?= htmlspecialchars($city['name']); ?> | PG Life</title>
-    <meta name="description" content="Discover and book the best Paying Guest (PG) accommodations in <?= htmlspecialchars($city['name']); ?>. Filter by gender, rent, and amenities like WiFi, AC, laundry, and meals.">
-    <meta name="keywords" content="PG in <?= htmlspecialchars($city['name']); ?>, Paying Guest <?= htmlspecialchars($city['name']); ?>, hostel <?= htmlspecialchars($city['name']); ?>, student accommodation, premium co-living <?= htmlspecialchars($city['name']); ?>">
 
-    <?php 
-        include "includes/head_links.php";
+    <?php
+    $city_canonical = SITE_URL . '/properties/' . rawurlencode($city['name']);
+    $is_paginated = $current_page > 1;
+    seo_head([
+        'title'       => 'Best PGs in ' . htmlspecialchars($city['name']) . ' | Paying Guest Accommodation | PG Life',
+        'description' => 'Browse ' . $total_properties . '+ verified PG accommodations in ' . htmlspecialchars($city['name']) . '. Filter by gender, rent & amenities (WiFi, AC, meals). View map & book instantly.',
+        'canonical'   => $city_canonical . ($is_paginated ? '?page=' . $current_page : ''),
+        'og_title'    => 'PG Accommodation in ' . htmlspecialchars($city['name']) . ' — PG Life',
+        'og_desc'     => 'Find the best Paying Guest rooms in ' . htmlspecialchars($city['name']) . '. Verified listings with photos, amenities, rent details and live location map.',
+        'og_image'    => SITE_URL . '/img/' . strtolower($city['name']) . '.png',
+        'keywords'    => 'PG in ' . htmlspecialchars($city['name']) . ', paying guest ' . htmlspecialchars($city['name']) . ', hostel ' . htmlspecialchars($city['name']) . ', PG rooms ' . htmlspecialchars($city['name']) . ', student accommodation ' . htmlspecialchars($city['name']),
+        'breadcrumbs' => [
+            ['name' => 'Home',           'url' => SITE_URL . '/home'],
+            ['name' => 'PG in ' . htmlspecialchars($city['name']), 'url' => $city_canonical],
+        ],
+        'noindex'     => $is_paginated,
+        'schema'      => [schema_property_list($properties, $city['name'])],
+    ]);
     ?>
 
+    <?php include "includes/head_links.php"; ?>
     <link href="css/property_list.css?v=3" rel="stylesheet" />
 </head>
 
 <body>
-    <?php
-        include "includes/header.php";
-    ?>
+    <?php include "includes/header.php"; ?>
+
+    <?php if ($current_page > 1): ?>
+    <link rel="prev" href="<?= htmlspecialchars($city_canonical . '?page=' . ($current_page - 1)) ?>">
+    <?php endif; ?>
+    <?php if ($current_page < $total_pages): ?>
+    <link rel="next" href="<?= htmlspecialchars($city_canonical . '?page=' . ($current_page + 1)) ?>">
+    <?php endif; ?>
+
+    <main id="main-content">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb py-2">
             <li class="breadcrumb-item">
@@ -173,6 +195,11 @@
     </nav>
 
     <div class="page-container">
+        <div class="city-page-header">
+            <h1>PG Accommodation in <?= htmlspecialchars($city_name); ?></h1>
+            <p class="lead text-muted">Discover <?= $total_properties ?>+ verified Paying Guest accommodations in <?= htmlspecialchars($city_name); ?>, India. Browse shared rooms, single rooms, and dormitory-style PGs with amenities like WiFi, AC, meals, and parking. Filter by rent, gender preference, and amenities to find the perfect fit for students and working professionals.</p>
+            <p class="text-muted"><?= htmlspecialchars($city_name); ?> offers a wide range of PG options across neighborhoods. Whether you need a budget PG near your college or a premium co-living space near your office, PG Life connects you directly with verified property owners. No brokerage, no hidden fees — just transparent PG listings with real photos and honest reviews.</p>
+        </div>
         <div class="filter-bar row justify-content-around">
             <div class="col-auto" data-toggle="modal" data-target="#filter-modal" style="cursor: pointer;">
                 <img src="img/filter.png" alt="filter" />
@@ -514,6 +541,8 @@
             </div>
         </div>
     </div>
+
+    </main><!-- /#main-content -->
 
     <?php
         include "includes/signup_modal.php";

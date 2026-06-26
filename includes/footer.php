@@ -46,7 +46,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">₹</span>
                 </div>
-                <input type="number" id="chat-widget-offer-input" class="form-control" placeholder="Enter monthly offer (min ₹1,000)..." min="1000" />
+                <input type="number" id="chat-widget-offer-input" class="form-control" placeholder="Enter monthly offer (min ₹1,000)..." aria-label="Rent Offer Amount" min="1000" />
                 <div class="input-group-append">
                     <button class="btn btn-warning font-weight-bold text-dark" id="chat-widget-submit-offer" type="button">Send Offer</button>
                 </div>
@@ -69,7 +69,7 @@
 
             <textarea id="chat-widget-input" class="chat-input" placeholder="Type a message..." rows="1" required aria-label="Chat message input"></textarea>
             
-            <button type="submit" class="chat-action-btn send-msg" title="Send Message">
+            <button type="submit" class="chat-action-btn send-msg" title="Send Message" aria-label="Send Message">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </form>
@@ -82,7 +82,10 @@
     </script>
 <?php } ?>
 
-<div class="footer">
+<!-- Skip to main content for accessibility/SEO -->
+<a class="sr-only sr-only-focusable" href="#main-content" style="position:absolute;top:-40px;left:0;z-index:9999;padding:8px 16px;background:#4F46E5;color:#fff;border-radius:0 0 4px 4px;transition:top .2s" onfocus="this.style.top='0'" onblur="this.style.top='-40px'">Skip to main content</a>
+
+<footer class="footer" role="contentinfo" aria-label="Site footer">
     <div class="page-container footer-container">
         <div class="footer-cities">
             <div class="footer-city">
@@ -126,9 +129,9 @@
             <span class="footer-legal-sep">&middot;</span>
             <a href="/disclaimer">Disclaimer</a>
         </div>
-        <div class="footer-copyright">&copy; <?= date('Y') ?> Copyright Keshabkjha. All rights reserved.</div>
+        <div class="footer-copyright">&copy; <?= date('Y') ?> PG Life by <a href="https://github.com/Keshabkjha" rel="author noopener" target="_blank" style="color:inherit;">Keshab Kumar</a>. All rights reserved.</div>
     </div>
-</div>
+</footer>
 
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>   

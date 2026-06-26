@@ -64,6 +64,45 @@
         return;
     }
 
+    // Verify the sender also has a relationship to this property
+    $sender_authorized = false;
+    $sql_owner = "SELECT owner_id FROM properties WHERE id = ?";
+    $stmt_owner = mysqli_prepare($conn, $sql_owner);
+    if ($stmt_owner) {
+        mysqli_stmt_bind_param($stmt_owner, "i", $property_id);
+        mysqli_stmt_execute($stmt_owner);
+        $res_owner = mysqli_stmt_get_result($stmt_owner);
+        if ($row_owner = mysqli_fetch_assoc($res_owner)) {
+            if ((int)$row_owner['owner_id'] === $sender_id) {
+                $sender_authorized = true;
+            }
+        }
+        mysqli_stmt_close($stmt_owner);
+    }
+    if (!$sender_authorized) {
+        $sql_sender_rel = "SELECT id FROM bookings WHERE user_id = ? AND property_id = ?
+                           UNION SELECT id FROM interested_users_properties WHERE user_id = ? AND property_id = ?";
+        $stmt_sender_rel = mysqli_prepare($conn, $sql_sender_rel);
+        if ($stmt_sender_rel) {
+            mysqli_stmt_bind_param($stmt_sender_rel, "iiii", $sender_id, $property_id, $sender_id, $property_id);
+            mysqli_stmt_execute($stmt_sender_rel);
+            mysqli_stmt_store_result($stmt_sender_rel);
+            if (mysqli_stmt_num_rows($stmt_sender_rel) > 0) {
+                $sender_authorized = true;
+            }
+            mysqli_stmt_close($stmt_sender_rel);
+        }
+    }
+    if (!$sender_authorized) {
+        echo json_encode(array("success" => false, "message" => "You are not associated with this property."));
+        return;
+    }
+
+    if (strlen($message) > 2000) {
+        echo json_encode(array("success" => false, "message" => "Message is too long (max 2000 characters)."));
+        return;
+    }
+
     $offer_status = 0;
     $offer_amount_val = null;
 

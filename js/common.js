@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
             $.ajax({
                 url: 'api/mark_notification_read.php',
                 type: 'POST',
-                data: { notification_id: notifId },
+                data: { notification_id: notifId, csrf_token: window.csrf_token },
                 dataType: 'json',
                 success: function() { fetchNotifications(); }
             });
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 $.ajax({
                     url: 'api/mark_notification_read.php',
                     type: 'POST',
-                    data: { all: '1' },
+                    data: { all: '1', csrf_token: window.csrf_token },
                     dataType: 'json',
                     success: function() { fetchNotifications(); }
                 });
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 $.ajax({
                     url: 'api/mark_notification_read.php',
                     type: 'POST',
-                    data: { all: '1' },
+                    data: { all: '1', csrf_token: window.csrf_token },
                     dataType: 'json',
                     success: function() { fetchNotifications(); }
                 });
@@ -302,6 +302,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Toast notifications
+function escapeHtmlText(text) {
+    if (!text) return '';
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function showToast(message, type) {
     type = type || 'info'; // 'success', 'error', 'info', 'warning'
     var toastId = 'pglife-toast-' + Date.now();
@@ -324,7 +331,7 @@ function showToast(message, type) {
 
     var toast = document.createElement('div');
     toast.id = toastId;
-    toast.innerHTML = '<i class="fas ' + style.icon + '" style="margin-right:10px;font-size:16px;flex-shrink:0;"></i><span style="line-height:1.4;">' + message + '</span><button onclick="document.getElementById(\'' + toastId + '\').remove()" style="background:none;border:none;color:white;font-size:20px;margin-left:auto;cursor:pointer;line-height:1;padding:0 0 0 10px;">&times;</button>';
+    toast.innerHTML = '<i class="fas ' + style.icon + '" style="margin-right:10px;font-size:16px;flex-shrink:0;"></i><span style="line-height:1.4;">' + escapeHtmlText(message) + '</span><button onclick="document.getElementById(\'' + toastId + '\').remove()" style="background:none;border:none;color:white;font-size:20px;margin-left:auto;cursor:pointer;line-height:1;padding:0 0 0 10px;">&times;</button>';
     toast.style.cssText = 'background:' + style.bg + ';color:white;padding:14px 18px;border-radius:8px;box-shadow:0 4px 15px rgba(0,0,0,0.25);display:flex;align-items:center;animation:pglife-slide-in 0.35s ease;font-size:14px;font-weight:500;';
 
     if (!document.getElementById('pglife-toast-style')) {

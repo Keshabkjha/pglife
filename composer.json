@@ -1,0 +1,12 @@
+{
+    "name": "keshabkjha/pglife",
+    "description": "Production readiness upgrades for PGLife",
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    }
+}

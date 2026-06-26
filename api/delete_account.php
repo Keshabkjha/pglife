@@ -2,6 +2,7 @@
     require("../includes/database_connect.php");
     header('Content-Type: application/json; charset=utf-8');
     require_once("../includes/rate_limiter.php");
+    require_once("../includes/secure_storage.php");
 
     $csrf_token = isset($_POST['csrf_token']) ? $_POST['csrf_token'] : '';
     if (empty($csrf_token) || !hash_equals($_SESSION['csrf_token'], $csrf_token)) {
@@ -60,8 +61,8 @@
         mysqli_stmt_execute($stmt_kyc);
         $res_kyc = mysqli_stmt_get_result($stmt_kyc);
         if ($row_kyc = mysqli_fetch_assoc($res_kyc)) {
-            if (!empty($row_kyc['kyc_document']) && file_exists('../' . $row_kyc['kyc_document'])) {
-                @unlink('../' . $row_kyc['kyc_document']);
+            if (!empty($row_kyc['kyc_document'])) {
+                delete_stored_file($row_kyc['kyc_document']);
             }
         }
         mysqli_stmt_close($stmt_kyc);
@@ -92,8 +93,8 @@
         mysqli_stmt_execute($stmt_receipts);
         $res_receipts = mysqli_stmt_get_result($stmt_receipts);
         while ($row_receipt = mysqli_fetch_assoc($res_receipts)) {
-            if (!empty($row_receipt['screenshot']) && file_exists('../' . $row_receipt['screenshot'])) {
-                @unlink('../' . $row_receipt['screenshot']);
+            if (!empty($row_receipt['screenshot'])) {
+                delete_stored_file($row_receipt['screenshot']);
             }
         }
         mysqli_stmt_close($stmt_receipts);
@@ -108,6 +109,28 @@
         mysqli_stmt_bind_param($stmt_del_payments, "i", $user_id);
         mysqli_stmt_execute($stmt_del_payments);
         mysqli_stmt_close($stmt_del_payments);
+    }
+
+    // Get all bookings of the user to decrement occupied_beds
+    $sql_user_bookings = "SELECT room_type_id FROM bookings WHERE user_id = ? FOR UPDATE";
+    $stmt_user_bookings = mysqli_prepare($conn, $sql_user_bookings);
+    if ($stmt_user_bookings) {
+        mysqli_stmt_bind_param($stmt_user_bookings, "i", $user_id);
+        mysqli_stmt_execute($stmt_user_bookings);
+        $res_user_bookings = mysqli_stmt_get_result($stmt_user_bookings);
+        while ($row_booking = mysqli_fetch_assoc($res_user_bookings)) {
+            if (!empty($row_booking['room_type_id'])) {
+                $rt_id = (int)$row_booking['room_type_id'];
+                $sql_dec = "UPDATE room_types SET occupied_beds = GREATEST(0, occupied_beds - 1) WHERE id = ?";
+                $stmt_dec = mysqli_prepare($conn, $sql_dec);
+                if ($stmt_dec) {
+                    mysqli_stmt_bind_param($stmt_dec, "i", $rt_id);
+                    mysqli_stmt_execute($stmt_dec);
+                    mysqli_stmt_close($stmt_dec);
+                }
+            }
+        }
+        mysqli_stmt_close($stmt_user_bookings);
     }
 
     $sql_del_bookings = "DELETE FROM bookings WHERE user_id = ?";
