@@ -1,5 +1,4 @@
 <?php
-    session_start();
     require_once "includes/database_connect.php";
     require_once "includes/seo_helper.php";
 ?>
@@ -27,13 +26,18 @@
     ?>
 
     <?php include "includes/head_links.php"; ?>
-    <link href="css/home.css?v=2" rel="stylesheet">
+    <link href="css/home.css?v=3" rel="stylesheet">
 </head>
 
 <body>
     <?php include "includes/header.php"; ?>
 
     <main id="main-content">
+    <?php if (isset($_GET['city_error'])) { ?>
+    <div class="alert alert-warning text-center mb-0" role="alert" style="border-radius:0;">
+        That city is not listed yet. Search one of the 11 cities below: Delhi, Mumbai, Bengaluru, Hyderabad, Kolkata, Chennai, Pune, Ahmedabad, Jaipur, Noida, or Gurgaon.
+    </div>
+    <?php } ?>
     <div class="landing-image" role="banner">
         <div class="search-box">
             <h1 class="white text-center" style="font-size:1.8rem;">
@@ -57,7 +61,7 @@
                         <option value="Gurgaon">
                     </datalist>
                     <div class="input-group-append">
-                        <button class="btn btn-secondary" type="submit">
+                        <button class="btn btn-secondary" type="submit" aria-label="Search PGs">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
@@ -168,7 +172,7 @@
             <div class="col-md-3 col-6 mb-4 text-center">
                 <div class="how-it-works-icon"><i class="fas fa-search"></i></div>
                 <h5 class="mt-3 font-weight-bold">Search City</h5>
-                <p class="text-muted">Enter your city and browse verified PG listings with photos, rent, andamenities.</p>
+                <p class="text-muted">Enter your city and browse verified PG listings with photos, rent, and amenities.</p>
             </div>
             <div class="col-md-3 col-6 mb-4 text-center">
                 <div class="how-it-works-icon"><i class="fas fa-sliders-h"></i></div>

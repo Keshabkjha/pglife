@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once "includes/database_connect.php";
 require_once "includes/seo_helper.php";
 ?>

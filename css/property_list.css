@@ -25,6 +25,14 @@
         display: block;
         margin: 0px auto 4px;
     }
+    .button-container .btn {
+        width: 100%;
+        float: none;
+        margin-top: 8px;
+    }
+    .rent-container {
+        justify-content: flex-start;
+    }
 }
 
 /* Property list-specific overrides on top of common.css shared styles */

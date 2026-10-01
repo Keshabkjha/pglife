@@ -1,6 +1,5 @@
 <base href="/">
 <meta name="theme-color" content="#4F46E5">
-<meta name="description" content="PG Life — Find Your Perfect PG Accommodation in India">
 <meta name="author" content="Keshab Kumar">
 <meta name="creator" content="Keshab Kumar">
 <meta name="copyright" content="PG Life by Keshab Kumar">
@@ -17,7 +16,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="PG Life">
 <link rel="manifest" href="manifest.json">
-<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 
 <!-- Performance: preconnect to critical third-party origins -->
 <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -32,7 +30,7 @@
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <link href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="css/common.css?v=4" rel="stylesheet">
+<link href="css/common.css?v=5" rel="stylesheet">
 <link href="css/chat.css?v=4" rel="stylesheet">
 
 <!-- Favicon -->

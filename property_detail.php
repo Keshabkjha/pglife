@@ -1,5 +1,4 @@
 <?php
-    session_start();
     require("includes/database_connect.php");
     require_once("includes/seo_helper.php");
 
@@ -150,7 +149,7 @@
     $sql_related = "SELECT p.id, p.name, p.address, p.rent, p.rating_clean, p.rating_food, p.rating_safety, p.primary_image
                     FROM properties p
                     WHERE p.city_id = ? AND p.id != ?
-                    ORDER BY p.created_at DESC
+                    ORDER BY p.id DESC
                     LIMIT 6";
     $stmt_related = mysqli_prepare($conn, $sql_related);
     if ($stmt_related) {
@@ -219,10 +218,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
     <?php include "includes/head_links.php"; ?>
-    <link href="css/property_detail.css?v=3" rel="stylesheet" />
+    <link href="css/property_detail.css?v=4" rel="stylesheet" />
 </head>
 
-<body>
+<body data-property-id="<?= (int)$property_id ?>">
     <?php include "includes/header.php"; ?>
 
     <main id="main-content">
@@ -393,71 +392,39 @@
     <div class="property-amenities">
         <div class="page-container">
             <h2>Amenities</h2>
+            <?php
+                $amenity_groups = [
+                    "Building" => [],
+                    "Common Area" => [],
+                    "Bedroom" => [],
+                    "Washroom" => [],
+                ];
+                foreach ($amenities as $amenity) {
+                    $type = $amenity['type'];
+                    if (!isset($amenity_groups[$type])) {
+                        $amenity_groups[$type] = [];
+                    }
+                    $amenity_groups[$type][] = $amenity;
+                }
+                $amenity_groups = array_filter($amenity_groups);
+            ?>
+            <?php if (empty($amenity_groups)) { ?>
+                <p class="text-muted mb-0">The owner has not listed amenities for this PG yet.</p>
+            <?php } else { ?>
             <div class="row justify-content-between">
+                <?php foreach ($amenity_groups as $group_name => $group_items) { ?>
                 <div class="col-md-auto">
-                    <h5>Building</h5>
-                    <?php 
-                        foreach ($amenities as $amenity) {
-                            if($amenity['type'] == "Building") {
-                    ?>
+                    <h5><?= htmlspecialchars($group_name) ?></h5>
+                    <?php foreach ($group_items as $amenity) { ?>
                         <div class="amenity-container">
-                            <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
+                            <img src="img/amenities/<?= htmlspecialchars($amenity['icon']) ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
                             <span><?= htmlspecialchars($amenity['name']) ?></span>
                         </div>
-                    <?php 
-                            }
-                        }
-                    ?>
+                    <?php } ?>
                 </div>
-                
-                <div class="col-md-auto">
-                    <h5>Common Area</h5>
-                    <?php
-                        foreach($amenities as $amenity) {
-                            if( $amenity['type'] == "Common Area") {
-                    ?>
-                    <div class="amenity-container">
-                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
-                        <span><?= htmlspecialchars($amenity['name']) ?></span>
-                    </div>
-                    <?php
-                            }
-                        }
-                    ?>                    
-                </div>
-
-                <div class="col-md-auto">
-                    <h5>Bedroom</h5>
-                    <?php
-                        foreach ($amenities as $amenity) {
-                            if ($amenity['type'] == "Bedroom") {
-                    ?>
-                    <div class="amenity-container">
-                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
-                        <span><?= htmlspecialchars($amenity['name']) ?></span>
-                    </div>
-                    <?php
-                            }
-                        }
-                    ?>
-                </div>
-
-                <div class="col-md-auto">
-                    <h5>Washroom</h5>
-                    <?php
-                        foreach ($amenities as $amenity) {
-                            if ($amenity['type'] == "Washroom") {
-                    ?>
-                    <div class="amenity-container">
-                        <img src="img/amenities/<?= $amenity['icon'] ?>.svg" alt="<?= htmlspecialchars($amenity['name']) ?>">
-                        <span><?= htmlspecialchars($amenity['name']) ?></span>
-                    </div>
-                    <?php
-                            }
-                        }
-                    ?>
-                </div>
+                <?php } ?>
             </div>
+            <?php } ?>
         </div>
     </div>
 
@@ -889,7 +856,7 @@
     <!-- Leaflet.js Interactive Maps JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <script type="text/javascript" src="js/property_detail.js?v=3"></script>
+    <script type="text/javascript" src="js/property_detail.js?v=5"></script>
 
     <script>
     // Share Property Modal

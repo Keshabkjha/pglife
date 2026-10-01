@@ -1,0 +1,50 @@
+# Production compose. Do not publish MySQL. Set secrets in the shell or a private env file
+# that is NOT committed:
+#   DB_PASSWORD, APP_URL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM_EMAIL
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: pglife
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
+    volumes:
+      - ./database/pglife.sql:/docker-entrypoint-initdb.d/01_base.sql
+      - ./database/run_migrations.sh:/docker-entrypoint-initdb.d/02_run_migrations.sh
+      - ./database:/migrations:ro
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: pglife
+      APP_ENV: production
+      APP_URL: ${APP_URL:?Set APP_URL to your public https URL}
+      FEATURE_MOCK_KYC: "false"
+      SMTP_HOST: ${SMTP_HOST:?Set SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM_EMAIL: ${SMTP_FROM_EMAIL:-}
+      SMTP_FROM_NAME: PG Life
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

@@ -1,5 +1,5 @@
 // PG Life - offline caching service worker
-var CACHE_NAME = 'pglife-v1';
+var CACHE_NAME = 'pglife-v2';
 var STATIC_ASSETS = [
     '/home',
     '/css/common.css',
@@ -47,6 +47,11 @@ self.addEventListener('fetch', function(event) {
     // Skip non-GET and API calls
     if (event.request.method !== 'GET') return;
     if (url.pathname.startsWith('/api/')) return;
+    if (url.origin !== self.location.origin) return;
+
+    // Never cache HTML. Pages include session-specific tokens.
+    var accept = event.request.headers.get('accept') || '';
+    if (accept.indexOf('text/html') !== -1) return;
 
     // Static assets (css, js, images): try cache first
     if (url.pathname.match(/\.(css|js|png|jpg|jpeg|gif|webp|ico|woff2?|ttf|svg)$/)) {

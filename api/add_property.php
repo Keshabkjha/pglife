@@ -122,16 +122,30 @@
         }
     }
 
-    // Insert property into database including cached coordinates
-    $sql_insert = "INSERT INTO properties (city_id, owner_id, name, address, description, gender, rent, latitude, longitude, rating_clean, rating_food, rating_safety, views) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0.0, 0.0, 0.0, 0)";
-    $stmt_insert = mysqli_prepare($conn, $sql_insert);
-    if (!$stmt_insert) {
-        echo json_encode(array("success" => false, "message" => "Failed to prepare database query."));
-        return;
+    // Insert property into database including cached coordinates.
+    // Bind doubles only when geocoding succeeded; PHP 8 rejects null for type "d".
+    $has_coords = $latitude !== null && $longitude !== null;
+    if ($has_coords) {
+        $latitude = (float)$latitude;
+        $longitude = (float)$longitude;
+        $sql_insert = "INSERT INTO properties (city_id, owner_id, name, address, description, gender, rent, latitude, longitude, rating_clean, rating_food, rating_safety, views) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0.0, 0.0, 0.0, 0)";
+        $stmt_insert = mysqli_prepare($conn, $sql_insert);
+        if (!$stmt_insert) {
+            echo json_encode(array("success" => false, "message" => "Failed to prepare database query."));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_insert, "iissssidd", $city_id, $owner_id, $name, $address, $description, $gender, $rent, $latitude, $longitude);
+    } else {
+        $sql_insert = "INSERT INTO properties (city_id, owner_id, name, address, description, gender, rent, latitude, longitude, rating_clean, rating_food, rating_safety, views) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL, 0.0, 0.0, 0.0, 0)";
+        $stmt_insert = mysqli_prepare($conn, $sql_insert);
+        if (!$stmt_insert) {
+            echo json_encode(array("success" => false, "message" => "Failed to prepare database query."));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_insert, "iissssi", $city_id, $owner_id, $name, $address, $description, $gender, $rent);
     }
-
-    mysqli_stmt_bind_param($stmt_insert, "iissssidd", $city_id, $owner_id, $name, $address, $description, $gender, $rent, $latitude, $longitude);
     $result_insert = mysqli_stmt_execute($stmt_insert);
 
     if (!$result_insert) {
@@ -141,6 +155,19 @@
 
     $new_property_id = mysqli_insert_id($conn);
     mysqli_stmt_close($stmt_insert);
+
+    // A listing with no room inventory cannot be booked. Create a shared and a private option from the listed rent.
+    $double_price = (int)$rent;
+    $single_price = (int)max($rent, round($rent * 1.35));
+    $sql_rooms = "INSERT INTO room_types (property_id, room_type, label, price_per_month, total_beds, occupied_beds, amenities)
+                  VALUES (?, 'double', 'Double Sharing', ?, 4, 0, 'WiFi,Bed'),
+                         (?, 'single', 'Single Room', ?, 2, 0, 'WiFi,AC')";
+    $stmt_rooms = mysqli_prepare($conn, $sql_rooms);
+    if ($stmt_rooms) {
+        mysqli_stmt_bind_param($stmt_rooms, "iiii", $new_property_id, $double_price, $new_property_id, $single_price);
+        mysqli_stmt_execute($stmt_rooms);
+        mysqli_stmt_close($stmt_rooms);
+    }
 
     // Insert amenities mappings
     if (!empty($amenities)) {

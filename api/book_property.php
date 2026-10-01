@@ -27,6 +27,32 @@
         return;
     }
 
+    $sql_gender = "SELECT p.gender AS property_gender, u.gender AS user_gender
+                   FROM properties p
+                   JOIN users u ON u.id = ?
+                   WHERE p.id = ?";
+    $stmt_gender = mysqli_prepare($conn, $sql_gender);
+    if (!$stmt_gender) {
+        echo json_encode(array("success" => false, "message" => "Something went wrong!"));
+        return;
+    }
+    mysqli_stmt_bind_param($stmt_gender, "ii", $user_id, $property_id);
+    mysqli_stmt_execute($stmt_gender);
+    $result_gender = mysqli_stmt_get_result($stmt_gender);
+    $gender_row = $result_gender ? mysqli_fetch_assoc($result_gender) : null;
+    mysqli_stmt_close($stmt_gender);
+    if (!$gender_row) {
+        echo json_encode(array("success" => false, "message" => "Property not found."));
+        return;
+    }
+    $property_gender = $gender_row['property_gender'];
+    $user_gender = $gender_row['user_gender'];
+    if ($property_gender !== 'unisex' && $property_gender !== $user_gender) {
+        $allowed = $property_gender === 'male' ? 'male' : 'female';
+        echo json_encode(array("success" => false, "message" => "This PG is " . $allowed . " only."));
+        return;
+    }
+
     // Check if already booked
     $sql_check = "SELECT * FROM bookings WHERE user_id = ? AND property_id = ?";
     $stmt_check = mysqli_prepare($conn, $sql_check);

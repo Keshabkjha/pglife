@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var markAllBtnMobile = document.getElementById('mark-all-read-btn-mobile');
 
     if (notifBell || notifBellMobile) {
-        var lastNotifCount = 0;
+        var lastNotifCount = -1;
 
         function fetchNotifications() {
             $.ajax({
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     // Play subtle sound on new notification
-                    if (res.unread_count > lastNotifCount && lastNotifCount >= 0) {
+                    if (lastNotifCount >= 0 && res.unread_count > lastNotifCount) {
                         try {
                             var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                             var osc = audioCtx.createOscillator();

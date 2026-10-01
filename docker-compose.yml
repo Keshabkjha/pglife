@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
     container_name: pglife_db
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_DATABASE: pglife
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -15,36 +13,45 @@ services:
       - ./database/run_migrations.sh:/docker-entrypoint-initdb.d/02_run_migrations.sh
       - ./database:/migrations:ro
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
 
   web:
     build: .
     container_name: pglife_web
-    restart: always
+    restart: unless-stopped
     ports:
       - "8080:80"
     volumes:
       - .:/var/www/html
-    env_file:
-      - .env
     environment:
       DB_HOST: db
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: pglife
       APP_ENV: development
+      APP_URL: http://localhost:8080
       FEATURE_MOCK_KYC: "true"
-      SMTP_HOST: ${SMTP_HOST:-mailhog}
-      SMTP_PORT: ${SMTP_PORT:-1025}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM_EMAIL: noreply@pglife.local
+      SMTP_FROM_NAME: PG Life
     depends_on:
-      - db
-      - mailhog
+      db:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
 
   mailhog:
     image: mailhog/mailhog
     container_name: pglife_mailhog
-    restart: always
+    restart: unless-stopped
     ports:
       - "8025:8025"
       - "1025:1025"

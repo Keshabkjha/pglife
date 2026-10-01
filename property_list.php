@@ -1,15 +1,30 @@
 <?php
-    session_start();
     require "includes/database_connect.php";
     require_once "includes/seo_helper.php";
 
     $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : NULL;
     $city_name = isset($_GET["city"]) ? trim($_GET["city"]) : '';
 
-    if (empty($city_name)) {
+    if ($city_name === '') {
         header("Location: /home");
         exit;
     }
+
+    $canonical_city = canonical_city_name($city_name);
+    if ($canonical_city === null) {
+        header("Location: /home?city_error=1");
+        exit;
+    }
+    if ($city_name !== $canonical_city) {
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 0;
+        $target = '/properties/' . rawurlencode($canonical_city);
+        if ($page > 1) {
+            $target .= '?page=' . $page;
+        }
+        header("Location: " . $target, true, 301);
+        exit;
+    }
+    $city_name = $canonical_city;
 
     $sql_1 = "SELECT * FROM cities WHERE name = ?";
     $stmt_1 = mysqli_prepare($conn, $sql_1);
@@ -157,7 +172,7 @@
         'canonical'   => $city_canonical . ($is_paginated ? '?page=' . $current_page : ''),
         'og_title'    => 'PG Accommodation in ' . htmlspecialchars($city['name']) . ' — PG Life',
         'og_desc'     => 'Find the best Paying Guest rooms in ' . htmlspecialchars($city['name']) . '. Verified listings with photos, amenities, rent details and live location map.',
-        'og_image'    => SITE_URL . '/img/' . strtolower($city['name']) . '.png',
+        'og_image'    => SITE_URL . '/img/' . city_image_file($city['name']),
         'keywords'    => 'PG in ' . htmlspecialchars($city['name']) . ', paying guest ' . htmlspecialchars($city['name']) . ', hostel ' . htmlspecialchars($city['name']) . ', PG rooms ' . htmlspecialchars($city['name']) . ', student accommodation ' . htmlspecialchars($city['name']),
         'breadcrumbs' => [
             ['name' => 'Home',           'url' => SITE_URL . '/home'],
@@ -169,7 +184,7 @@
     ?>
 
     <?php include "includes/head_links.php"; ?>
-    <link href="css/property_list.css?v=3" rel="stylesheet" />
+    <link href="css/property_list.css?v=4" rel="stylesheet" />
 </head>
 
 <body>
@@ -550,7 +565,7 @@
         include "includes/footer.php";
     ?>
 
-    <script type="text/javascript" src="js/property_list.js?v=3"></script>
+    <script type="text/javascript" src="js/property_list.js?v=5"></script>
 </body>
 
 </html>

@@ -67,7 +67,7 @@ window.addEventListener("load", function () {
             var card_address = card.querySelector(".property-address").textContent.toLowerCase();
             var card_rent = parseInt(card.getAttribute("data-rent"));
             var card_gender = card.getAttribute("data-gender");
-            var card_amenities = card.getAttribute("data-amenities").split(",");
+            var card_amenities = (card.getAttribute("data-amenities") || "").split(",");
 
             // Check Keyword
             var keyword_matches = (keyword === "" || card_name.includes(keyword) || card_address.includes(keyword));
@@ -173,12 +173,14 @@ var toggle_interested_success = function (event) {
         if (response.is_interested) {
             is_interested_image.classList.add("fas");
             is_interested_image.classList.remove("far");
+            is_interested_image.setAttribute("aria-label", "Remove from wishlist");
             if (interested_user_count) {
                 interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) + 1;
             }
         } else {
             is_interested_image.classList.add("far");
             is_interested_image.classList.remove("fas");
+            is_interested_image.setAttribute("aria-label", "Add to wishlist");
             if (interested_user_count) {
                 interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) - 1;
             }

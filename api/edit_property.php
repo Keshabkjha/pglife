@@ -179,17 +179,32 @@
         }
     }
 
-    // Update properties table
-    $sql_update = "UPDATE properties 
-                   SET city_id = ?, name = ?, address = ?, description = ?, gender = ?, rent = ?, latitude = ?, longitude = ?, primary_image = ? 
-                   WHERE id = ? AND owner_id = ?";
-    $stmt_update = mysqli_prepare($conn, $sql_update);
-    if (!$stmt_update) {
-        echo json_encode(array("success" => false, "message" => "Failed to prepare update query."));
-        return;
-    }
+    // Update properties table. Skip double binds when coordinates are still unknown.
     $p_img_val = !empty($primary_image) ? $primary_image : null;
-    mysqli_stmt_bind_param($stmt_update, "issssiddsii", $city_id, $name, $address, $description, $gender, $rent, $latitude, $longitude, $p_img_val, $property_id, $owner_id);
+    $has_coords = $latitude !== null && $longitude !== null && $latitude !== '' && $longitude !== '';
+    if ($has_coords) {
+        $latitude = (float)$latitude;
+        $longitude = (float)$longitude;
+        $sql_update = "UPDATE properties 
+                       SET city_id = ?, name = ?, address = ?, description = ?, gender = ?, rent = ?, latitude = ?, longitude = ?, primary_image = ? 
+                       WHERE id = ? AND owner_id = ?";
+        $stmt_update = mysqli_prepare($conn, $sql_update);
+        if (!$stmt_update) {
+            echo json_encode(array("success" => false, "message" => "Failed to prepare update query."));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_update, "issssiddsii", $city_id, $name, $address, $description, $gender, $rent, $latitude, $longitude, $p_img_val, $property_id, $owner_id);
+    } else {
+        $sql_update = "UPDATE properties 
+                       SET city_id = ?, name = ?, address = ?, description = ?, gender = ?, rent = ?, latitude = NULL, longitude = NULL, primary_image = ? 
+                       WHERE id = ? AND owner_id = ?";
+        $stmt_update = mysqli_prepare($conn, $sql_update);
+        if (!$stmt_update) {
+            echo json_encode(array("success" => false, "message" => "Failed to prepare update query."));
+            return;
+        }
+        mysqli_stmt_bind_param($stmt_update, "issssisii", $city_id, $name, $address, $description, $gender, $rent, $p_img_val, $property_id, $owner_id);
+    }
     $result_update = mysqli_stmt_execute($stmt_update);
     mysqli_stmt_close($stmt_update);
 

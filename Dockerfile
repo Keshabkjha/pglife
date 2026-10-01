@@ -17,4 +17,11 @@ RUN a2enmod rewrite headers
 
 # Allow .htaccess overrides in the web root
 RUN sed -i 's|AllowOverride None|AllowOverride All|g' /etc/apache2/apache2.conf
-RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Options Indexes FollowSymLinks\n    Require all granted\n</Directory>' >> /etc/apache2/apache2.conf
+RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Options -Indexes +FollowSymLinks\n    Require all granted\n</Directory>' >> /etc/apache2/apache2.conf
+
+RUN printf 'expose_php=Off\ndisplay_errors=Off\ndisplay_startup_errors=Off\nlog_errors=On\n' > /usr/local/etc/php/conf.d/production.ini
+
+COPY . /var/www/html
+
+RUN mkdir -p /var/www/html/storage/kyc /var/www/html/storage/receipts /var/www/html/img/kyc /var/www/html/img/receipts \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/img

@@ -1,7 +1,23 @@
 window.addEventListener ("load", function () {
-    const search = window.location.search;
-    const params = new URLSearchParams(search);
-    const property_id = params.get('property_id');
+    function resolvePropertyId() {
+        var params = new URLSearchParams(window.location.search);
+        var fromQuery = params.get('property_id');
+        if (fromQuery) return fromQuery;
+        var match = window.location.pathname.match(/\/pg\/(\d+)/);
+        if (match) return match[1];
+        var fromBody = document.body.getAttribute('data-property-id');
+        if (fromBody) return fromBody;
+        var hidden = document.querySelector('input[name="property_id"]');
+        return hidden ? hidden.value : '';
+    }
+
+    function escapeMapText(text) {
+        return String(text || '').replace(/[&<>"']/g, function (ch) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+        });
+    }
+
+    const property_id = resolvePropertyId();
 
     var is_interested_image = document.getElementsByClassName('is-interested-image')[0];
     if (is_interested_image) {
@@ -79,7 +95,7 @@ window.addEventListener ("load", function () {
             }).addTo(map);
 
             L.marker([mapLat, mapLng]).addTo(map)
-                .bindPopup('<strong>' + propName + '</strong><br>' + propAddr)
+                .bindPopup('<strong>' + escapeMapText(propName) + '</strong><br>' + escapeMapText(propAddr))
                 .openPopup();
         }
 
@@ -373,12 +389,14 @@ var toggle_interested_success = function (event) {
         if(response.is_interested) {
             is_interested_image.classList.add('fas');
             is_interested_image.classList.remove('far');
+            is_interested_image.setAttribute('aria-label', 'Remove from wishlist');
             if (interested_user_count) {
                 interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) + 1;
             }
         } else {            
             is_interested_image.classList.add('far');
             is_interested_image.classList.remove('fas');
+            is_interested_image.setAttribute('aria-label', 'Add to wishlist');
             if (interested_user_count) {
                 interested_user_count.innerHTML = parseFloat(interested_user_count.innerHTML) - 1;
             }

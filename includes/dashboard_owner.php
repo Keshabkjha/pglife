@@ -70,8 +70,17 @@
         <div class="owner-properties-grid mt-3">
             <?php 
             foreach ($owner_properties as $property) { 
-                $property_images = glob("img/properties/" . $property['id'] . "/*");
-                $image_path = !empty($property_images) ? $property_images[0] : 'img/logo.png';
+                $property_images = glob("img/properties/" . $property['id'] . "/*") ?: [];
+                $image_path = 'img/logo.png';
+                if (!empty($property['primary_image'])) {
+                    $primary_path = "img/properties/" . $property['id'] . "/" . basename($property['primary_image']);
+                    if (is_file($primary_path)) {
+                        $image_path = $primary_path;
+                    }
+                }
+                if ($image_path === 'img/logo.png' && !empty($property_images)) {
+                    $image_path = $property_images[0];
+                }
                 
                 $prop_bookings = $bookings_by_prop[$property['id']] ?? [];
                 $prop_bookings_count = count($prop_bookings);

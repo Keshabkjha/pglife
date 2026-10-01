@@ -11,7 +11,7 @@ header('Content-Type: application/xml; charset=utf-8');
 header('X-Robots-Tag: noindex');
 header('Cache-Control: public, max-age=3600');
 
-$base = 'https://www.pglife.in';
+$base = site_base_url();
 $now  = gmdate('Y-m-d');
 
 $static_pages = [
@@ -22,7 +22,7 @@ $static_pages = [
 ];
 
 $cities = [];
-$res = mysqli_query($conn, "SELECT name, updated_at FROM cities ORDER BY name");
+$res = mysqli_query($conn, "SELECT name FROM cities ORDER BY name");
 if ($res) {
     while ($row = mysqli_fetch_assoc($res)) {
         $cities[] = $row;
@@ -30,7 +30,7 @@ if ($res) {
 }
 
 $properties = [];
-$res2 = mysqli_query($conn, "SELECT id, updated_at FROM properties ORDER BY id ASC");
+$res2 = mysqli_query($conn, "SELECT id FROM properties ORDER BY id ASC");
 if ($res2) {
     while ($row = mysqli_fetch_assoc($res2)) {
         $properties[] = $row;
@@ -71,7 +71,7 @@ foreach ($properties as $prop) {
     if (!empty($img_glob)) {
         foreach (array_slice($img_glob, 0, 5) as $img_path) {
             echo "    <image:image>\n";
-            echo "      <image:loc>" . htmlspecialchars($base . '/' . htmlspecialchars($img_path)) . "</image:loc>\n";
+            echo "      <image:loc>" . htmlspecialchars($base . '/' . $img_path) . "</image:loc>\n";
             echo "    </image:image>\n";
         }
     }

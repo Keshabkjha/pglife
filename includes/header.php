@@ -35,6 +35,7 @@
         }
     }
 ?>
+<a class="sr-only sr-only-focusable" href="#main-content" style="position:absolute;top:-40px;left:0;z-index:9999;padding:8px 16px;background:#4F46E5;color:#fff;border-radius:0 0 4px 4px;transition:top .2s" onfocus="this.style.top='0'" onblur="this.style.top='-40px'">Skip to main content</a>
 <header class="header sticky-top" role="banner">
     <nav class="navbar navbar-expand-md navbar-light" aria-label="Main navigation">
         <a class="navbar-brand" href="/home" aria-label="PG Life — Home">
@@ -84,7 +85,7 @@
                         <i class="fas fa-user"></i>Signup
                     </a>
                 </li>
-                <div class="nav-vl"></div>
+                <li class="nav-item nav-vl-item" aria-hidden="true"><span class="nav-vl"></span></li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-toggle="modal" data-target="#login-modal">
                         <i class="fas fa-sign-in-alt"></i>Login
@@ -136,7 +137,7 @@
                         <?php } ?>
                     </a>
                 </li>
-                <div class="nav-vl"></div>
+                <li class="nav-item nav-vl-item" aria-hidden="true"><span class="nav-vl"></span></li>
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">
                         <i class="fas fa-sign-out-alt"></i>Logout

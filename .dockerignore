@@ -1,0 +1,20 @@
+.git
+.github
+.env
+.env.*
+node_modules
+vendor
+test-results
+.phpunit.cache
+.phpunit.result.cache
+mysql_data
+.docker
+*.md
+Implementation plan.md
+playwright.config.js
+package.json
+package-lock.json
+composer.json
+composer.lock
+phpunit.xml
+tests

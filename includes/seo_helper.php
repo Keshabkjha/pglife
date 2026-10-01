@@ -7,7 +7,8 @@
  * Creator: Keshab Kumar — https://github.com/Keshabkjha
  */
 
-define('SITE_URL',        'https://www.pglife.in');
+require_once __DIR__ . '/app_config.php';
+define('SITE_URL',        site_base_url());
 define('SITE_NAME',       'PG Life');
 define('SITE_TAGLINE',    'Find Your Perfect PG Accommodation in India');
 define('SITE_LOGO',       SITE_URL . '/img/logo.png');

@@ -82,9 +82,6 @@
     </script>
 <?php } ?>
 
-<!-- Skip to main content for accessibility/SEO -->
-<a class="sr-only sr-only-focusable" href="#main-content" style="position:absolute;top:-40px;left:0;z-index:9999;padding:8px 16px;background:#4F46E5;color:#fff;border-radius:0 0 4px 4px;transition:top .2s" onfocus="this.style.top='0'" onblur="this.style.top='-40px'">Skip to main content</a>
-
 <footer class="footer" role="contentinfo" aria-label="Site footer">
     <div class="page-container footer-container">
         <div class="footer-cities">
@@ -135,7 +132,7 @@
 
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js"></script>   
-<script type="text/javascript" src="js/common.js"></script>
+<script type="text/javascript" src="js/common.js?v=5"></script>
 <?php if (isset($_SESSION['user_id'])) { ?>
 <script type="text/javascript" src="js/chat.js"></script>
 <?php } ?>

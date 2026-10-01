@@ -20,18 +20,24 @@
         }
     }
 
-    require_once __DIR__ . '/security_headers.php';
+    require_once __DIR__ . '/app_config.php';
+
+    ini_set('log_errors', '1');
+    ini_set('display_errors', '0');
+    ini_set('display_startup_errors', '0');
+    ini_set('expose_php', '0');
 
     if (session_status() === PHP_SESSION_NONE) {
-        // Enforce secure session cookie flags
-        ini_set('session.cookie_httponly', 1);
-        ini_set('session.use_only_cookies', 1);
-        ini_set('session.cookie_samesite', 'Strict');
-        if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-            ini_set('session.cookie_secure', 1);
+        ini_set('session.cookie_httponly', '1');
+        ini_set('session.use_only_cookies', '1');
+        ini_set('session.cookie_samesite', 'Lax');
+        if (request_is_https()) {
+            ini_set('session.cookie_secure', '1');
         }
         session_start();
     }
+
+    require_once __DIR__ . '/security_headers.php';
 
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -42,6 +48,7 @@
     $db_password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : "";
     $db_name = getenv('DB_NAME') ?: "pglife";
 
+    mysqli_report(MYSQLI_REPORT_OFF);
     $conn = mysqli_connect($db_host, $db_user, $db_password, $db_name);
     
     if(mysqli_connect_errno()){
